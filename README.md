@@ -5,7 +5,7 @@
 ![Go Report Card](https://goreportcard.com/badge/github.com/clambin/solaredge)
 ![GitHub](https://img.shields.io/github/license/clambin/solaredge?style=plastic)
 
-Basic Go API SolarEdge power inverters.
+Basic Go API for SolarEdge power inverters.
 
 ## Authors
 
