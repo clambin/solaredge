@@ -2,7 +2,7 @@ package solaredge_test
 
 import (
 	"github.com/clambin/gotools/httpstub"
-	"github.com/clambin/solaredge-exporter/pkg/solaredge"
+	"github.com/clambin/solaredge"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
