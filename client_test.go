@@ -2,8 +2,10 @@ package solaredge_test
 
 import (
 	"bytes"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
+	"time"
 )
 
 type Server struct {
@@ -53,4 +55,25 @@ func (server *Server) serve(req *http.Request) *http.Response {
 		StatusCode: http.StatusOK,
 		Body:       io.NopCloser(bytes.NewBufferString(body)),
 	}
+}
+
+func (server *Server) slowserve(req *http.Request) *http.Response {
+	ctx := req.Context()
+
+	timer := time.NewTimer(5 * time.Second)
+
+loop:
+	for {
+		select {
+		case <-ctx.Done():
+			log.Info("context expired")
+			break loop
+		case <-timer.C:
+			log.Info("timer expired")
+			break
+		}
+	}
+	timer.Stop()
+
+	return &http.Response{StatusCode: http.StatusInternalServerError}
 }

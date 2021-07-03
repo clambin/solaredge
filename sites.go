@@ -1,10 +1,11 @@
 package solaredge
 
 import (
+	"context"
 	"net/url"
 )
 
-func (client *Client) GetSiteIDs() (sites []int, err error) {
+func (client *Client) GetSiteIDs(ctx context.Context) (sites []int, err error) {
 	var sitesResponse struct {
 		Sites struct {
 			Count int
@@ -15,7 +16,7 @@ func (client *Client) GetSiteIDs() (sites []int, err error) {
 	}
 
 	args := url.Values{}
-	err = client.call("/sites/list", args, &sitesResponse)
+	err = client.call(ctx, "/sites/list", args, &sitesResponse)
 
 	if err == nil {
 		for _, site := range sitesResponse.Sites.Site {

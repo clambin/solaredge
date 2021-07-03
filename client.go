@@ -1,6 +1,7 @@
 package solaredge
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -16,9 +17,9 @@ type Client struct {
 }
 
 type API interface {
-	GetSiteIDs() ([]int, error)
-	GetPower(int, time.Time, time.Time) ([]PowerMeasurement, error)
-	GetPowerOverview(int) (float64, float64, float64, float64, float64, error)
+	GetSiteIDs(ctx context.Context) (ids []int, err error)
+	GetPower(ctx context.Context, id int, from time.Time, to time.Time) (measurements []PowerMeasurement, err error)
+	GetPowerOverview(ctx context.Context, id int) (lifeTime, lastYear, lastMonth, lastDay, current float64, err error)
 }
 
 func NewClient(token string, httpClient *http.Client) *Client {
@@ -36,12 +37,12 @@ const (
 	apiURL = "https://monitoringapi.solaredge.com"
 )
 
-func (client *Client) call(endpoint string, args url.Values, response interface{}) (err error) {
+func (client *Client) call(ctx context.Context, endpoint string, args url.Values, response interface{}) (err error) {
 	args.Add("api_key", client.Token)
 
 	fullURL := apiURL + endpoint + "?" + args.Encode()
 
-	req, _ := http.NewRequest(http.MethodGet, fullURL, nil)
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
 	var resp *http.Response
 
 	if resp, err = client.HTTPClient.Do(req); err == nil {
