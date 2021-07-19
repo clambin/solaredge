@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -14,6 +13,7 @@ import (
 type Client struct {
 	Token      string
 	HTTPClient *http.Client
+	APIURL     string
 }
 
 type API interface {
@@ -22,6 +22,9 @@ type API interface {
 	GetPowerOverview(ctx context.Context, id int) (lifeTime, lastYear, lastMonth, lastDay, current float64, err error)
 }
 
+// NewClient creates a new API client
+//
+// Deprecated: this adds little value and will be removed
 func NewClient(token string, httpClient *http.Client) *Client {
 	if httpClient == nil {
 		httpClient = &http.Client{}
@@ -37,25 +40,33 @@ const (
 	apiURL = "https://monitoringapi.solaredge.com"
 )
 
+func (client *Client) getURL() (response string) {
+	response = apiURL
+	if client.APIURL != "" {
+		response = client.APIURL
+	}
+	return
+}
+
 func (client *Client) call(ctx context.Context, endpoint string, args url.Values, response interface{}) (err error) {
 	args.Add("api_key", client.Token)
 
-	fullURL := apiURL + endpoint + "?" + args.Encode()
+	fullURL := client.getURL() + endpoint + "?" + args.Encode()
 
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
+
 	var resp *http.Response
+	resp, err = client.HTTPClient.Do(req)
 
-	if resp, err = client.HTTPClient.Do(req); err == nil {
-		defer func(body io.ReadCloser) {
-			_ = body.Close()
-		}(resp.Body)
-
+	if err == nil {
 		if resp.StatusCode == 200 {
 			body, _ := ioutil.ReadAll(resp.Body)
 			err = json.Unmarshal(body, response)
 		} else {
 			err = errors.New(resp.Status)
 		}
+		_ = resp.Body.Close()
 	}
+
 	return
 }

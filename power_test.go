@@ -2,16 +2,25 @@ package solaredge_test
 
 import (
 	"context"
-	"github.com/clambin/gotools/httpstub"
 	"github.com/clambin/solaredge"
 	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 )
 
 func TestClient_GetPower(t *testing.T) {
-	server := &Server{}
-	client := solaredge.NewClient("TESTTOKEN", httpstub.NewTestClient(server.serve))
+	server := &Server{token: "TESTTOKEN"}
+	apiServer := httptest.NewServer(http.HandlerFunc(server.apiHandler))
+	defer apiServer.Close()
+
+	client := solaredge.Client{
+		Token:      "TESTTOKEN",
+		HTTPClient: &http.Client{},
+		APIURL:     apiServer.URL,
+	}
+
 	siteIDs, err := client.GetSiteIDs(context.Background())
 	assert.NoError(t, err)
 	if assert.Len(t, siteIDs, 1) {
@@ -28,8 +37,16 @@ func TestClient_GetPower(t *testing.T) {
 }
 
 func TestClient_GetPowerOverview(t *testing.T) {
-	server := &Server{}
-	client := solaredge.NewClient("TESTTOKEN", httpstub.NewTestClient(server.serve))
+	server := &Server{token: "TESTTOKEN"}
+	apiServer := httptest.NewServer(http.HandlerFunc(server.apiHandler))
+	defer apiServer.Close()
+
+	client := solaredge.Client{
+		Token:      "TESTTOKEN",
+		HTTPClient: &http.Client{},
+		APIURL:     apiServer.URL,
+	}
+
 	siteIDs, err := client.GetSiteIDs(context.Background())
 	assert.NoError(t, err)
 	if assert.Len(t, siteIDs, 1) {

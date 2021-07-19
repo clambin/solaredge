@@ -1,79 +1,48 @@
 package solaredge_test
 
 import (
-	"bytes"
-	log "github.com/sirupsen/logrus"
-	"io"
+	"context"
+	"github.com/clambin/solaredge"
+	"github.com/stretchr/testify/assert"
 	"net/http"
+	"net/http/httptest"
+	"testing"
 	"time"
 )
 
-type Server struct {
+func TestClient_Authentication(t *testing.T) {
+	server := &Server{token: "TESTTOKEN"}
+	apiServer := httptest.NewServer(http.HandlerFunc(server.apiHandler))
+	defer apiServer.Close()
+
+	client := solaredge.NewClient("BADTOKEN", nil)
+	client.APIURL = apiServer.URL
+
+	_, err := client.GetSiteIDs(context.Background())
+
+	if assert.Error(t, err) {
+		assert.Equal(t, "403 Forbidden", err.Error())
+	}
+
+	client.Token = "TESTTOKEN"
+	_, err = client.GetSiteIDs(context.Background())
+
+	assert.NoError(t, err)
 }
 
-func (server *Server) serve(req *http.Request) *http.Response {
-	values := req.URL.Query()
+func TestClient_Timeout(t *testing.T) {
+	server := &Server{token: "TESTTOKEN", slow: true}
+	apiServer := httptest.NewServer(http.HandlerFunc(server.apiHandler))
+	defer apiServer.Close()
 
-	var value []string
-	var ok bool
+	client := solaredge.NewClient("TESTTOKEN", &http.Client{Timeout: 100 * time.Millisecond})
+	client.APIURL = apiServer.URL
 
-	value, ok = values["api_key"]
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+	defer cancel()
 
-	if ok == false || len(value) == 0 || value[0] != "TESTTOKEN" {
-		return &http.Response{
-			StatusCode: http.StatusForbidden,
-			Status:     "403 Forbidden",
-		}
-	}
+	// this should finish after 100 ms (http.Client timeout)
+	_, err := client.GetSiteIDs(ctx)
 
-	var body string
-
-	switch req.URL.Path {
-	case "/sites/list":
-		body = `{ "sites": { "count": 1, "site": [ { "id": 1, "name": "foo" } ] } }`
-	case "/site/1/overview":
-		body = `{ "overview": { "lastUpdateTime": "2021-05-19 17:08:23", 
-			"lifeTimeData": { "energy": 10000.0 },
-    		"lastYearData": { "energy": 1000.0 },
-		    "lastMonthData": { "energy": 100.0 },
-		    "lastDayData": { "energy": 10.0 },
-			"currentPower": { "power": 1.0 },
-    		"measuredBy": "INVERTER" } }`
-	case "/site/1/power":
-		body = `{ "power": { "timeUnit": "QUARTER_OF_AN_HOUR", "unit": "W", "measuredBy": "INVERTER", "values": [
-			{ "date": "2021-05-18 00:00:00", "value": 12.0 },
-      		{ "date": "2021-05-18 00:15:00", "value": 24.0 },
-      		{ "date": "2021-05-18 00:15:00", "value": null } ] } }`
-	default:
-		return &http.Response{
-			StatusCode: http.StatusNotFound,
-			Status:     "API " + req.URL.Path + " not implemented",
-		}
-	}
-
-	return &http.Response{
-		StatusCode: http.StatusOK,
-		Body:       io.NopCloser(bytes.NewBufferString(body)),
-	}
-}
-
-func (server *Server) slowserve(req *http.Request) *http.Response {
-	ctx := req.Context()
-
-	timer := time.NewTimer(5 * time.Second)
-
-loop:
-	for {
-		select {
-		case <-ctx.Done():
-			log.Info("context expired")
-			break loop
-		case <-timer.C:
-			log.Info("timer expired")
-			break
-		}
-	}
-	timer.Stop()
-
-	return &http.Response{StatusCode: http.StatusInternalServerError}
+	assert.Error(t, err)
 }
