@@ -16,6 +16,7 @@ type Client struct {
 	APIURL     string
 }
 
+//go:generate mockery --name API
 type API interface {
 	GetSiteIDs(ctx context.Context) (ids []int, err error)
 	GetPower(ctx context.Context, id int, from time.Time, to time.Time) (measurements []PowerMeasurement, err error)
