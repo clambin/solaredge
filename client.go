@@ -3,8 +3,8 @@ package solaredge
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"time"
@@ -49,25 +49,30 @@ func (client *Client) getURL() (response string) {
 	return
 }
 
-func (client *Client) call(ctx context.Context, endpoint string, args url.Values, response interface{}) (err error) {
+func (client *Client) call(ctx context.Context, endpoint string, args url.Values, response interface{}) error {
 	args.Add("api_key", client.Token)
 
 	fullURL := client.getURL() + endpoint + "?" + args.Encode()
 
-	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
-
-	var resp *http.Response
-	resp, err = client.HTTPClient.Do(req)
-
-	if err == nil {
-		if resp.StatusCode == 200 {
-			body, _ := ioutil.ReadAll(resp.Body)
-			err = json.Unmarshal(body, response)
-		} else {
-			err = errors.New(resp.Status)
-		}
-		_ = resp.Body.Close()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
+	if err != nil {
+		return fmt.Errorf("%s: %w", fullURL, err)
 	}
 
-	return
+	resp, err := client.HTTPClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode > 299 {
+		return fmt.Errorf("%s: %s", b, resp.Status)
+	}
+	if err = json.Unmarshal(b, response); err != nil {
+		return fmt.Errorf("%s: %w", b, err)
+	}
+	return nil
 }
