@@ -1,6 +1,7 @@
 package solaredge
 
 import (
+	"bytes"
 	"context"
 	"net/url"
 	"strconv"
@@ -16,14 +17,17 @@ type TimeStamp struct {
 	TS time.Time
 }
 
-func (ts *TimeStamp) UnmarshalJSON(buf []byte) (err error) {
-	var t time.Time
-	t, err = time.Parse("\"2006-01-02 15:04:05\"", string(buf))
-
-	if err == nil {
-		ts.TS = t
+func (ts *TimeStamp) UnmarshalJSON(buf []byte) error {
+	if len(buf) == 0 || bytes.Equal(buf, []byte("null")) {
+		ts.TS = time.Time{}
+		return nil
 	}
-	return
+	t, err := time.Parse("\"2006-01-02 15:04:05\"", string(buf))
+	if err != nil {
+		return err
+	}
+	ts.TS = t
+	return nil
 }
 
 func (client *Client) GetPower(ctx context.Context, siteID int, startTime, endTime time.Time) (entries []PowerMeasurement, err error) {
