@@ -8,8 +8,9 @@ import (
 )
 
 type Server struct {
-	token string
-	slow  bool
+	token   string
+	slow    bool
+	garbage bool
 }
 
 func (server *Server) apiHandler(w http.ResponseWriter, req *http.Request) {
@@ -22,6 +23,11 @@ func (server *Server) apiHandler(w http.ResponseWriter, req *http.Request) {
 
 	if server.authenticate(req) == false {
 		http.Error(w, "403 Forbidden", http.StatusForbidden)
+		return
+	}
+
+	if server.garbage {
+		_, _ = w.Write([]byte(`[{"foo"="bar"}]`))
 		return
 	}
 

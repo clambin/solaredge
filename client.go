@@ -3,7 +3,7 @@ package solaredge
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -28,7 +28,7 @@ type API interface {
 // Deprecated: this adds little value and will be removed
 func NewClient(token string, httpClient *http.Client) *Client {
 	if httpClient == nil {
-		httpClient = &http.Client{}
+		httpClient = http.DefaultClient
 	}
 
 	return &Client{
@@ -54,20 +54,55 @@ func (client *Client) call(ctx context.Context, endpoint string, args url.Values
 
 	fullURL := client.getURL() + endpoint + "?" + args.Encode()
 
-	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
+	var req *http.Request
+	req, err = http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create client request: %w", err)
+	}
 
 	var resp *http.Response
 	resp, err = client.HTTPClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to call server: %w", err)
+	}
 
-	if err == nil {
-		if resp.StatusCode == 200 {
-			body, _ := ioutil.ReadAll(resp.Body)
-			err = json.Unmarshal(body, response)
-		} else {
-			err = errors.New(resp.Status)
-		}
+	defer func() {
 		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to call server: %s", resp.Status)
+	}
+
+	body, _ := ioutil.ReadAll(resp.Body)
+	err = json.Unmarshal(body, response)
+
+	if err != nil {
+		return &InvalidServerResponse{
+			Body: string(body),
+			Err:  err,
+		}
 	}
 
 	return
+}
+
+var _ error = InvalidServerResponse{}
+
+type InvalidServerResponse struct {
+	Body string
+	Err  error
+}
+
+func (e InvalidServerResponse) Error() string {
+	return "invalid server response: " + e.Err.Error()
+}
+
+func (e InvalidServerResponse) Is(e2 error) bool {
+	_, ok := e2.(*InvalidServerResponse)
+	return ok
+}
+
+func (e InvalidServerResponse) Unwrap() error {
+	return e.Err
 }
