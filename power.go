@@ -7,15 +7,18 @@ import (
 	"time"
 )
 
+// PowerMeasurement contains a power measurement from the solar panels at a point in time
 type PowerMeasurement struct {
 	Time  time.Time
 	Value float64
 }
 
+// TimeStamp represents a timestamp. Used to unmarshal the server response
 type TimeStamp struct {
 	TS time.Time
 }
 
+// UnmarshalJSON parses a timestamp in the server response
 func (ts *TimeStamp) UnmarshalJSON(buf []byte) (err error) {
 	var t time.Time
 	t, err = time.Parse("\"2006-01-02 15:04:05\"", string(buf))
@@ -26,6 +29,7 @@ func (ts *TimeStamp) UnmarshalJSON(buf []byte) (err error) {
 	return
 }
 
+// GetPower returns the PowerMeasurements for the specified site and timeframe
 func (client *Client) GetPower(ctx context.Context, siteID int, startTime, endTime time.Time) (entries []PowerMeasurement, err error) {
 	args := url.Values{}
 
@@ -60,6 +64,7 @@ func (client *Client) GetPower(ctx context.Context, siteID int, startTime, endTi
 	return
 }
 
+// GetPowerOverview returns the power produced at the site for its entire lifetime, last year, month, day and current day
 func (client *Client) GetPowerOverview(ctx context.Context, siteID int) (lifeTime, lastYear, lastMonth, lastDay, current float64, err error) {
 	args := url.Values{}
 

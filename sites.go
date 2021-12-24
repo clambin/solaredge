@@ -5,6 +5,7 @@ import (
 	"net/url"
 )
 
+// GetSiteIDs returns all site IDs registered under the account associated with the supplied client token
 func (client *Client) GetSiteIDs(ctx context.Context) (sites []int, err error) {
 	var sitesResponse struct {
 		Sites struct {

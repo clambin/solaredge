@@ -10,12 +10,14 @@ import (
 	"time"
 )
 
+// Client structure to interact with the SolarEdge API
 type Client struct {
 	Token      string
 	HTTPClient *http.Client
 	APIURL     string
 }
 
+// API interface exposes the supported API calls
 //go:generate mockery --name API
 type API interface {
 	GetSiteIDs(ctx context.Context) (ids []int, err error)
@@ -89,20 +91,25 @@ func (client *Client) call(ctx context.Context, endpoint string, args url.Values
 
 var _ error = InvalidServerResponse{}
 
+// InvalidServerResponse error wraps the error when processing the server response.  Contains the original server response
+// that generated the error, as well as the json error that triggered the error.
 type InvalidServerResponse struct {
 	Body string
 	Err  error
 }
 
+// Error call complies with the error interface
 func (e InvalidServerResponse) Error() string {
 	return "invalid server response: " + e.Err.Error()
 }
 
+// Is allows unwrapping of the error
 func (e InvalidServerResponse) Is(e2 error) bool {
 	_, ok := e2.(*InvalidServerResponse)
 	return ok
 }
 
+// Unwrap allows unwrapping of the error
 func (e InvalidServerResponse) Unwrap() error {
 	return e.Err
 }
