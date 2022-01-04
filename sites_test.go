@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/clambin/solaredge"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -22,8 +23,7 @@ func TestClient_GetSiteIDs(t *testing.T) {
 
 	siteIDs, err := client.GetSiteIDs(context.Background())
 
-	assert.NoError(t, err)
-	if assert.Len(t, siteIDs, 1) {
-		assert.Equal(t, 1, siteIDs[0])
-	}
+	require.NoError(t, err)
+	require.Len(t, siteIDs, 1)
+	assert.Equal(t, 1, siteIDs[0])
 }

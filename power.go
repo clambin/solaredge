@@ -31,11 +31,6 @@ func (ts *TimeStamp) UnmarshalJSON(buf []byte) (err error) {
 
 // GetPower returns the PowerMeasurements for the specified site and timeframe
 func (client *Client) GetPower(ctx context.Context, siteID int, startTime, endTime time.Time) (entries []PowerMeasurement, err error) {
-	args := url.Values{}
-
-	args.Set("startTime", startTime.Format("2006-01-02 15:04:05"))
-	args.Set("endTime", endTime.Format("2006-01-02 15:04:05"))
-
 	var powerStats struct {
 		Power struct {
 			TimeUnit   string
@@ -47,6 +42,10 @@ func (client *Client) GetPower(ctx context.Context, siteID int, startTime, endTi
 			}
 		}
 	}
+
+	args := url.Values{}
+	args.Set("startTime", startTime.Format("2006-01-02 15:04:05"))
+	args.Set("endTime", endTime.Format("2006-01-02 15:04:05"))
 
 	err = client.call(ctx, "/site/"+strconv.Itoa(siteID)+"/power", args, &powerStats)
 
@@ -66,8 +65,6 @@ func (client *Client) GetPower(ctx context.Context, siteID int, startTime, endTi
 
 // GetPowerOverview returns the power produced at the site for its entire lifetime, last year, month, day and current day
 func (client *Client) GetPowerOverview(ctx context.Context, siteID int) (lifeTime, lastYear, lastMonth, lastDay, current float64, err error) {
-	args := url.Values{}
-
 	var overviewResponse struct {
 		Overview struct {
 			LastUpdateTime TimeStamp
@@ -90,6 +87,7 @@ func (client *Client) GetPowerOverview(ctx context.Context, siteID int) (lifeTim
 		}
 	}
 
+	args := url.Values{}
 	err = client.call(ctx, "/site/"+strconv.Itoa(siteID)+"/overview", args, &overviewResponse)
 
 	if err == nil {

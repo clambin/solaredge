@@ -47,9 +47,10 @@ func TestClient_Timeout(t *testing.T) {
 	defer cancel()
 
 	// this should finish after 100 ms (http.Client timeout)
+	start := time.Now()
 	_, err := client.GetSiteIDs(ctx)
-
-	assert.Error(t, err)
+	require.Error(t, err)
+	assert.Less(t, time.Since(start), 400*time.Millisecond)
 }
 
 func TestClient_Errors(t *testing.T) {
@@ -99,4 +100,35 @@ func TestClient_Errors(t *testing.T) {
 	require.Error(t, err)
 	require.IsType(t, &url.Error{}, err)
 	assert.Equal(t, "invalid%20url/sites/list?api_key=TESTTOKEN", err.(*url.Error).URL)
+}
+
+func TestClientEmpty(t *testing.T) {
+	server := &Server{token: "TESTTOKEN", empty: true}
+	apiServer := httptest.NewServer(http.HandlerFunc(server.apiHandler))
+
+	client := solaredge.Client{
+		Token:      "TESTTOKEN",
+		HTTPClient: http.DefaultClient,
+		APIURL:     apiServer.URL,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	sites, err := client.GetSiteIDs(ctx)
+	require.NoError(t, err)
+	assert.Empty(t, sites)
+
+	power, err := client.GetPower(ctx, 1, time.Now().Add(-time.Hour), time.Now())
+	require.NoError(t, err)
+	assert.Empty(t, power)
+
+	lifeTime, lastYear, lastMonth, lastDay, current, err := client.GetPowerOverview(context.Background(), 1)
+	require.NoError(t, err)
+	assert.Zero(t, lifeTime)
+	assert.Zero(t, lastYear)
+	assert.Zero(t, lastMonth)
+	assert.Zero(t, lastDay)
+	assert.Zero(t, current)
+
 }
