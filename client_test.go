@@ -25,9 +25,8 @@ func TestClient_Authentication(t *testing.T) {
 
 	_, err := client.GetSiteIDs(context.Background())
 
-	if assert.Error(t, err) {
-		assert.Equal(t, "failed to call server: 403 Forbidden", err.Error())
-	}
+	require.Error(t, err)
+	require.Equal(t, "403 Forbidden", err.Error())
 
 	client.Token = "TESTTOKEN"
 	_, err = client.GetSiteIDs(context.Background())
@@ -70,7 +69,12 @@ func TestClient_Errors(t *testing.T) {
 
 	_, err = client.GetSiteIDs(ctx)
 	require.Error(t, err)
-	assert.Equal(t, "failed to call server: 403 Forbidden", err.Error())
+	assert.True(t, errors.Is(err, &solaredge.HTTPError{}))
+	assert.Equal(t, "403 Forbidden", err.Error())
+	var err2 *solaredge.HTTPError
+	assert.True(t, errors.As(err, &err2))
+	assert.Equal(t, http.StatusForbidden, err2.StatusCode)
+	assert.Equal(t, "403 Forbidden", err2.Status)
 	assert.NoError(t, errors.Unwrap(err))
 
 	client.Token = "TESTTOKEN"
@@ -78,8 +82,8 @@ func TestClient_Errors(t *testing.T) {
 
 	_, err = client.GetSiteIDs(ctx)
 	require.Error(t, err)
-	assert.Equal(t, `invalid server response: invalid character '=' after object key`, err.Error())
-	assert.True(t, errors.Is(err, &solaredge.InvalidServerResponse{}))
+	assert.Equal(t, `json parse error: invalid character '=' after object key`, err.Error())
+	assert.True(t, errors.Is(err, &solaredge.ParseError{}))
 
 	err = errors.Unwrap(err)
 	require.Error(t, err)

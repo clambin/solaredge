@@ -73,43 +73,21 @@ func (client *Client) call(ctx context.Context, endpoint string, args url.Values
 	}()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to call server: %s", resp.Status)
+		return &HTTPError{
+			StatusCode: resp.StatusCode,
+			Status:     resp.Status,
+		}
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
 	err = json.Unmarshal(body, response)
 
 	if err != nil {
-		return &InvalidServerResponse{
+		return &ParseError{
 			Body: string(body),
 			Err:  err,
 		}
 	}
 
 	return
-}
-
-var _ error = InvalidServerResponse{}
-
-// InvalidServerResponse error wraps the error when processing the server response.  Contains the original server response
-// that generated the error, as well as the json error that triggered the error.
-type InvalidServerResponse struct {
-	Body string
-	Err  error
-}
-
-// Error call complies with the error interface
-func (e InvalidServerResponse) Error() string {
-	return "invalid server response: " + e.Err.Error()
-}
-
-// Is allows unwrapping of the error
-func (e InvalidServerResponse) Is(e2 error) bool {
-	_, ok := e2.(*InvalidServerResponse)
-	return ok
-}
-
-// Unwrap allows unwrapping of the error
-func (e InvalidServerResponse) Unwrap() error {
-	return e.Err
 }
