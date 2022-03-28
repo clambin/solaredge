@@ -51,12 +51,11 @@ func TestClient_GetPowerOverview(t *testing.T) {
 	require.Len(t, siteIDs, 1)
 	assert.Equal(t, 1, siteIDs[0])
 
-	lifeTime, lastYear, lastMonth, lastDay, current, err := client.GetPowerOverview(context.Background(), siteIDs[0])
+	lifeTime, currentYear, currentMonth, currentDay, current, err := client.GetPowerOverview(context.Background(), siteIDs[0])
 	require.NoError(t, err)
 	assert.NotZero(t, lifeTime)
-	assert.NotZero(t, lastYear)
-	assert.NotZero(t, lastMonth)
-	assert.NotZero(t, lastDay)
+	assert.NotZero(t, currentYear)
+	assert.NotZero(t, currentMonth)
+	assert.NotZero(t, currentDay)
 	assert.NotZero(t, current)
-
 }

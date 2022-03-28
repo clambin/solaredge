@@ -63,8 +63,8 @@ func (client *Client) GetPower(ctx context.Context, siteID int, startTime, endTi
 	return
 }
 
-// GetPowerOverview returns the power produced at the site for its entire lifetime, last year, month, day and current day
-func (client *Client) GetPowerOverview(ctx context.Context, siteID int) (lifeTime, lastYear, lastMonth, lastDay, current float64, err error) {
+// GetPowerOverview returns the energy produced at the site for its entire lifetime, current year, month and day (in Wh) and current power (in W)
+func (client *Client) GetPowerOverview(ctx context.Context, siteID int) (lifeTime, currentYear, currentMonth, currentDay, current float64, err error) {
 	var overviewResponse struct {
 		Overview struct {
 			LastUpdateTime TimeStamp
@@ -92,9 +92,9 @@ func (client *Client) GetPowerOverview(ctx context.Context, siteID int) (lifeTim
 
 	if err == nil {
 		lifeTime = overviewResponse.Overview.LifeTimeData.Energy
-		lastYear = overviewResponse.Overview.LastYearData.Energy
-		lastMonth = overviewResponse.Overview.LastMonthData.Energy
-		lastDay = overviewResponse.Overview.LastDayData.Energy
+		currentYear = overviewResponse.Overview.LastYearData.Energy
+		currentMonth = overviewResponse.Overview.LastMonthData.Energy
+		currentDay = overviewResponse.Overview.LastDayData.Energy
 		current = overviewResponse.Overview.CurrentPower.Power
 	}
 	return
