@@ -18,6 +18,7 @@ type Client struct {
 }
 
 // API interface exposes the supported API calls
+//
 //go:generate mockery --name API
 type API interface {
 	GetSiteIDs(ctx context.Context) (ids []int, err error)
@@ -51,13 +52,12 @@ func (client *Client) getURL() (response string) {
 	return
 }
 
-func (client *Client) call(ctx context.Context, endpoint string, args url.Values, response interface{}) (err error) {
+func (client *Client) call(ctx context.Context, endpoint string, args url.Values, response any) error {
 	args.Add("api_key", client.Token)
 
 	fullURL := client.getURL() + endpoint + "?" + args.Encode()
 
-	var req *http.Request
-	req, err = http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create client request: %w", err)
 	}
@@ -80,14 +80,12 @@ func (client *Client) call(ctx context.Context, endpoint string, args url.Values
 	}
 
 	body, _ := io.ReadAll(resp.Body)
-	err = json.Unmarshal(body, response)
-
-	if err != nil {
-		return &ParseError{
+	if err = json.Unmarshal(body, response); err != nil {
+		err = &ParseError{
 			Body: string(body),
 			Err:  err,
 		}
 	}
 
-	return
+	return err
 }

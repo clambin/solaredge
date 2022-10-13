@@ -11,21 +11,24 @@ import (
 )
 
 func TestHTTPError(t *testing.T) {
+	sc := http.StatusForbidden
+	s := http.StatusText(sc)
+
 	err := &solaredge.HTTPError{
-		StatusCode: http.StatusForbidden,
-		Status:     "403 Forbidden",
+		StatusCode: sc,
+		Status:     s,
 	}
 
-	assert.Equal(t, "403 Forbidden", err.Error())
+	assert.Equal(t, s, err.Error())
 	assert.True(t, errors.Is(err, &solaredge.HTTPError{}))
 
 	err2 := fmt.Errorf("http: %w", err)
-	assert.Equal(t, "http: 403 Forbidden", err2.Error())
-	assert.True(t, errors.Is(err, &solaredge.HTTPError{}))
+	assert.True(t, errors.Is(err2, &solaredge.HTTPError{}))
+	assert.Equal(t, "http: "+s, err2.Error())
 
 	err3 := &solaredge.HTTPError{}
-	assert.True(t, errors.As(err, &err3))
-	assert.Equal(t, "403 Forbidden", err3.Error())
+	assert.True(t, errors.As(err2, &err3))
+	assert.Equal(t, s, err3.Error())
 }
 
 func TestParseError(t *testing.T) {
