@@ -2,7 +2,7 @@ package solaredge_test
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
+	"log"
 	"net/http"
 	"time"
 )
@@ -15,7 +15,7 @@ type Server struct {
 }
 
 func (server *Server) apiHandler(w http.ResponseWriter, req *http.Request) {
-	log.Debug("apiHandler: " + req.URL.Path)
+	log.Println("apiHandler: " + req.URL.Path)
 
 	if server.slow && wait(req.Context(), 5*time.Second) == false {
 		http.Error(w, "context exceeded", http.StatusRequestTimeout)
