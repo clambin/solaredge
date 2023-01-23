@@ -69,10 +69,10 @@ func TestClient_Errors(t *testing.T) {
 
 	_, err = client.GetSiteIDs(ctx)
 	require.Error(t, err)
-	assert.True(t, errors.Is(err, &solaredge.HTTPError{}))
+	assert.ErrorIs(t, err, &solaredge.HTTPError{})
 	assert.Equal(t, "403 Forbidden", err.Error())
 	var err2 *solaredge.HTTPError
-	assert.True(t, errors.As(err, &err2))
+	require.ErrorAs(t, err, &err2)
 	assert.Equal(t, http.StatusForbidden, err2.StatusCode)
 	assert.Equal(t, "403 Forbidden", err2.Status)
 	assert.NoError(t, errors.Unwrap(err))
@@ -83,18 +83,19 @@ func TestClient_Errors(t *testing.T) {
 	_, err = client.GetSiteIDs(ctx)
 	require.Error(t, err)
 	assert.Equal(t, `json parse error: invalid character '=' after object key`, err.Error())
-	assert.True(t, errors.Is(err, &solaredge.ParseError{}))
+	assert.ErrorIs(t, err, &solaredge.ParseError{})
 
 	err = errors.Unwrap(err)
 	require.Error(t, err)
-	require.IsType(t, &json.SyntaxError{}, err)
-	assert.Equal(t, int64(8), err.(*json.SyntaxError).Offset)
+	var err3 *json.SyntaxError
+	require.ErrorAs(t, err, &err3)
+	assert.Equal(t, int64(8), err3.Offset)
 
 	apiServer.Close()
 	_, err = client.GetSiteIDs(ctx)
 	require.Error(t, err)
 	assert.Equal(t, `failed to call server: Get "`+apiServer.URL+`/sites/list?api_key=TESTTOKEN": dial tcp 127.0.0.1:`+testURL.Port()+`: connect: connection refused`, err.Error())
-	assert.True(t, errors.Is(err, unix.ECONNREFUSED))
+	assert.ErrorIs(t, err, unix.ECONNREFUSED)
 
 	client.APIURL = "invalid url"
 	_, err = client.GetSiteIDs(ctx)
@@ -102,8 +103,9 @@ func TestClient_Errors(t *testing.T) {
 	assert.Equal(t, `failed to call server: Get "invalid%20url/sites/list?api_key=TESTTOKEN": unsupported protocol scheme ""`, err.Error())
 	err = errors.Unwrap(err)
 	require.Error(t, err)
-	require.IsType(t, &url.Error{}, err)
-	assert.Equal(t, "invalid%20url/sites/list?api_key=TESTTOKEN", err.(*url.Error).URL)
+	var err4 *url.Error
+	require.ErrorAs(t, err, &err4)
+	assert.Equal(t, "invalid%20url/sites/list?api_key=TESTTOKEN", err4.URL)
 }
 
 func TestClientEmpty(t *testing.T) {
