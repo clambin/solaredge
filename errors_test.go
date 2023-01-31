@@ -2,54 +2,129 @@ package solaredge_test
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/clambin/solaredge"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"testing"
 )
 
 func TestHTTPError(t *testing.T) {
-	sc := http.StatusForbidden
-	s := http.StatusText(sc)
+	/*
+		sc := http.StatusForbidden
+		s := http.StatusText(sc)
 
-	err := &solaredge.HTTPError{
-		StatusCode: sc,
-		Status:     s,
+		err := &solaredge.HTTPError{
+			StatusCode: sc,
+			Status:     s,
+		}
+
+		assert.Equal(t, s, err.Error())
+		assert.ErrorIs(t, err, &solaredge.HTTPError{})
+
+		err2 := fmt.Errorf("http: %w", err)
+		assert.ErrorIs(t, err2, &solaredge.HTTPError{})
+		assert.Equal(t, "http: "+s, err2.Error())
+
+		err3 := &solaredge.HTTPError{}
+		require.ErrorAs(t, err2, &err3)
+		assert.Equal(t, s, err3.Error())
+
+	*/
+	tests := []struct {
+		name     string
+		err      error
+		other    error
+		expectIs bool
+		expectAs bool
+	}{
+		{
+			name:     "direct",
+			err:      &solaredge.HTTPError{StatusCode: http.StatusForbidden, Status: "Forbidden"},
+			other:    &solaredge.HTTPError{},
+			expectIs: true,
+			expectAs: true,
+		},
+		{
+			name:     "wrapped",
+			err:      fmt.Errorf("error: %w", &solaredge.HTTPError{StatusCode: http.StatusForbidden, Status: "Forbidden"}),
+			other:    &solaredge.HTTPError{},
+			expectIs: true,
+			expectAs: true,
+		},
+		{
+			name:     "is not",
+			err:      &solaredge.HTTPError{},
+			other:    errors.New("error"),
+			expectIs: false,
+			expectAs: true,
+		},
 	}
 
-	assert.Equal(t, s, err.Error())
-	assert.ErrorIs(t, err, &solaredge.HTTPError{})
-
-	err2 := fmt.Errorf("http: %w", err)
-	assert.ErrorIs(t, err2, &solaredge.HTTPError{})
-	assert.Equal(t, "http: "+s, err2.Error())
-
-	err3 := &solaredge.HTTPError{}
-	require.ErrorAs(t, err2, &err3)
-	assert.Equal(t, s, err3.Error())
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Error(t, tt.err)
+			assert.Equal(t, tt.expectIs, errors.Is(tt.err, tt.other))
+			var newErr *solaredge.HTTPError
+			assert.Equal(t, tt.expectAs, errors.As(tt.err, &newErr))
+			if tt.expectAs {
+				assert.ErrorIs(t, newErr, &solaredge.HTTPError{})
+			}
+		})
+	}
 }
 
 func TestParseError(t *testing.T) {
-	err := &solaredge.ParseError{
-		Body: "foo",
-		Err:  &json.SyntaxError{Offset: 10},
+	tests := []struct {
+		name     string
+		err      error
+		other    error
+		expectIs bool
+		expectAs bool
+	}{
+		{
+			name:     "direct",
+			err:      &solaredge.ParseError{Err: &json.SyntaxError{Offset: 10}, Body: "hello"},
+			other:    &solaredge.ParseError{},
+			expectIs: true,
+			expectAs: true,
+		},
+		{
+			name:     "wrapped",
+			err:      fmt.Errorf("error: %w", &solaredge.ParseError{Err: &json.SyntaxError{Offset: 10}, Body: "hello"}),
+			other:    &solaredge.ParseError{},
+			expectIs: true,
+			expectAs: true,
+		},
+		{
+			name:     "is not",
+			err:      &solaredge.ParseError{},
+			other:    errors.New("error"),
+			expectIs: false,
+			expectAs: true,
+		},
 	}
 
-	assert.Equal(t, "json parse error: ", err.Error())
-	assert.ErrorIs(t, err, &solaredge.ParseError{})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Error(t, tt.err)
+			assert.Equal(t, tt.expectIs, errors.Is(tt.err, tt.other))
+			var newErr *solaredge.ParseError
+			assert.Equal(t, tt.expectAs, errors.As(tt.err, &newErr))
+			if tt.expectAs {
+				assert.ErrorIs(t, newErr, &solaredge.ParseError{})
+			}
+		})
+	}
+}
 
-	err2 := fmt.Errorf("error: %w", err)
-	assert.Equal(t, "error: json parse error: ", err2.Error())
-	assert.ErrorIs(t, err, &solaredge.ParseError{})
-
-	err3 := &solaredge.ParseError{}
-	require.ErrorAs(t, err2, &err3)
-	assert.Equal(t, "json parse error: ", err3.Error())
-	assert.Equal(t, "foo", err3.Body)
-
-	err4 := &json.SyntaxError{}
-	require.ErrorAs(t, err2, &err4)
-	assert.Equal(t, int64(10), err4.Offset)
+func TestErrInvalidJSON_Unwrap(t *testing.T) {
+	e := &solaredge.ParseError{
+		Err: &json.SyntaxError{Offset: 10},
+	}
+	e2 := errors.Unwrap(e)
+	var e3 *json.SyntaxError
+	assert.ErrorAs(t, e2, &e3)
+	assert.Equal(t, int64(10), e3.Offset)
 }

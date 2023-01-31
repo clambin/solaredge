@@ -20,7 +20,7 @@ func TestClient_Authentication(t *testing.T) {
 	apiServer := httptest.NewServer(http.HandlerFunc(server.apiHandler))
 	defer apiServer.Close()
 
-	client := solaredge.NewClient("BADTOKEN", nil)
+	client := solaredge.Client{Token: "BADTOKEN"}
 	client.APIURL = apiServer.URL
 
 	_, err := client.GetSiteIDs(context.Background())
@@ -39,7 +39,7 @@ func TestClient_Timeout(t *testing.T) {
 	apiServer := httptest.NewServer(http.HandlerFunc(server.apiHandler))
 	defer apiServer.Close()
 
-	client := solaredge.NewClient("TESTTOKEN", &http.Client{Timeout: 100 * time.Millisecond})
+	client := solaredge.Client{Token: "TESTTOKEN", HTTPClient: &http.Client{Timeout: 100 * time.Millisecond}}
 	client.APIURL = apiServer.URL
 
 	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
@@ -59,9 +59,8 @@ func TestClient_Errors(t *testing.T) {
 	require.NoError(t, err)
 
 	client := solaredge.Client{
-		Token:      "BADTOKEN",
-		HTTPClient: http.DefaultClient,
-		APIURL:     apiServer.URL,
+		Token:  "BADTOKEN",
+		APIURL: apiServer.URL,
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -94,18 +93,16 @@ func TestClient_Errors(t *testing.T) {
 	apiServer.Close()
 	_, err = client.GetSiteIDs(ctx)
 	require.Error(t, err)
-	assert.Equal(t, `failed to call server: Get "`+apiServer.URL+`/sites/list?api_key=TESTTOKEN": dial tcp 127.0.0.1:`+testURL.Port()+`: connect: connection refused`, err.Error())
+	assert.Equal(t, `Get "`+apiServer.URL+`/sites/list?api_key=TESTTOKEN": dial tcp 127.0.0.1:`+testURL.Port()+`: connect: connection refused`, err.Error())
 	assert.ErrorIs(t, err, unix.ECONNREFUSED)
 
 	client.APIURL = "invalid url"
 	_, err = client.GetSiteIDs(ctx)
 	require.Error(t, err)
-	assert.Equal(t, `failed to call server: Get "invalid%20url/sites/list?api_key=TESTTOKEN": unsupported protocol scheme ""`, err.Error())
-	err = errors.Unwrap(err)
-	require.Error(t, err)
+	assert.Equal(t, `Get "/sites/list?api_key=TESTTOKEN": unsupported protocol scheme ""`, err.Error())
 	var err4 *url.Error
 	require.ErrorAs(t, err, &err4)
-	assert.Equal(t, "invalid%20url/sites/list?api_key=TESTTOKEN", err4.URL)
+	assert.Equal(t, "/sites/list?api_key=TESTTOKEN", err4.URL)
 }
 
 func TestClientEmpty(t *testing.T) {
@@ -113,9 +110,8 @@ func TestClientEmpty(t *testing.T) {
 	apiServer := httptest.NewServer(http.HandlerFunc(server.apiHandler))
 
 	client := solaredge.Client{
-		Token:      "TESTTOKEN",
-		HTTPClient: http.DefaultClient,
-		APIURL:     apiServer.URL,
+		Token:  "TESTTOKEN",
+		APIURL: apiServer.URL,
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -137,4 +133,26 @@ func TestClientEmpty(t *testing.T) {
 	assert.Zero(t, lastDay)
 	assert.Zero(t, current)
 
+}
+
+func TestBuildURL(t *testing.T) {
+	target := "https://example.com"
+	endpoint := "foo"
+	args := url.Values{
+		"api_key": []string{"123"},
+	}
+
+	fullURL, err := url.Parse(target)
+	require.NoError(t, err)
+
+	fullURL.Path = endpoint
+	q := fullURL.Query()
+	for key, vals := range args {
+		for _, val := range vals {
+			q.Add(key, val)
+		}
+	}
+	fullURL.RawQuery = q.Encode()
+
+	assert.Equal(t, "https://example.com/foo?api_key=123", fullURL.String())
 }

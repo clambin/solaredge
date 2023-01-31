@@ -17,9 +17,8 @@ func TestClient_GetPower(t *testing.T) {
 	defer apiServer.Close()
 
 	client := solaredge.Client{
-		Token:      "TESTTOKEN",
-		HTTPClient: &http.Client{},
-		APIURL:     apiServer.URL,
+		Token:  "TESTTOKEN",
+		APIURL: apiServer.URL,
 	}
 
 	siteIDs, err := client.GetSiteIDs(context.Background())
@@ -41,9 +40,8 @@ func TestClient_GetPowerOverview(t *testing.T) {
 	defer apiServer.Close()
 
 	client := solaredge.Client{
-		Token:      "TESTTOKEN",
-		HTTPClient: &http.Client{},
-		APIURL:     apiServer.URL,
+		Token:  "TESTTOKEN",
+		APIURL: apiServer.URL,
 	}
 
 	siteIDs, err := client.GetSiteIDs(context.Background())
