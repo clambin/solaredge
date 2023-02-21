@@ -11,27 +11,6 @@ import (
 )
 
 func TestHTTPError(t *testing.T) {
-	/*
-		sc := http.StatusForbidden
-		s := http.StatusText(sc)
-
-		err := &solaredge.HTTPError{
-			StatusCode: sc,
-			Status:     s,
-		}
-
-		assert.Equal(t, s, err.Error())
-		assert.ErrorIs(t, err, &solaredge.HTTPError{})
-
-		err2 := fmt.Errorf("http: %w", err)
-		assert.ErrorIs(t, err2, &solaredge.HTTPError{})
-		assert.Equal(t, "http: "+s, err2.Error())
-
-		err3 := &solaredge.HTTPError{}
-		require.ErrorAs(t, err2, &err3)
-		assert.Equal(t, s, err3.Error())
-
-	*/
 	tests := []struct {
 		name     string
 		err      error
