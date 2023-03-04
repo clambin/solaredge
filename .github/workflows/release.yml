@@ -24,7 +24,7 @@ jobs:
       - name: go vet
         run: |
           go vet ./...
-      - name: test go v${{ matrix.go }}
+      - name: go test
         run: |
           go test ./... -race -coverprofile=coverage.txt -covermode=atomic
       - uses: codecov/codecov-action@v3
