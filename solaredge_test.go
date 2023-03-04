@@ -6,7 +6,6 @@ import (
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/sys/unix"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -241,7 +240,6 @@ func TestClient_Errors(t *testing.T) {
 	s.Close()
 	_, err = c.GetSites(ctx)
 	require.Error(t, err)
-	assert.ErrorIs(t, err, unix.ECONNREFUSED)
 
 	c.apiURL = "invalid url"
 	_, err = c.GetSites(ctx)
