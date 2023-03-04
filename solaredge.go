@@ -18,10 +18,12 @@ package solaredge
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -64,6 +66,12 @@ func (c *Client) call(ctx context.Context, endpoint string, args url.Values, res
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
+		// hide the API key from the error
+		var urlError *url.Error
+		if errors.As(err, &urlError) {
+			urlError.URL = hideAPIKey(urlError.URL)
+			err = urlError
+		}
 		return err
 	}
 
@@ -166,4 +174,9 @@ func buildArgsFromTimeRange(start, end time.Time, label, layout string) (url.Val
 	args.Set("start"+label, start.Format(layout))
 	args.Set("end"+label, end.Format(layout))
 	return args, nil
+}
+
+func hideAPIKey(input string) string {
+	re := regexp.MustCompile(`api_key=(?P<token>\w+)(&|$)`)
+	return re.ReplaceAllString(input, "api_key=<REDACTED>$2")
 }

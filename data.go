@@ -109,7 +109,7 @@ func (c *Client) GetSiteDataPeriod(ctx context.Context) (time.Time, time.Time, e
 	return time.Time(output.DataPeriod.StartDate), time.Time(output.DataPeriod.EndDate), err
 }
 
-// Energy produced by the site of a time range
+// Energy produced by the site in a time range
 type Energy struct {
 	MeasuredBy string  `json:"measuredBy"`
 	TimeUnit   string  `json:"timeUnit"`

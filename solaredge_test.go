@@ -240,14 +240,15 @@ func TestClient_Errors(t *testing.T) {
 	s.Close()
 	_, err = c.GetSites(ctx)
 	require.Error(t, err)
+	//t.Log(err)
 
 	c.apiURL = "invalid url"
 	_, err = c.GetSites(ctx)
 	require.Error(t, err)
-	assert.Equal(t, `Get "/sites/list?api_key=TESTTOKEN&version=1.0.0": unsupported protocol scheme ""`, err.Error())
+	assert.Equal(t, `Get "/sites/list?api_key=<REDACTED>&version=1.0.0": unsupported protocol scheme ""`, err.Error())
 	var err4 *url.Error
 	require.ErrorAs(t, err, &err4)
-	assert.Equal(t, "/sites/list?api_key=TESTTOKEN&version=1.0.0", err4.URL)
+	assert.Equal(t, "/sites/list?api_key=<REDACTED>&version=1.0.0", err4.URL)
 }
 
 func TestClient_SetActiveSiteID(t *testing.T) {
@@ -338,4 +339,36 @@ func (s *Server) authenticate(req *http.Request) bool {
 	value, ok := values["api_key"]
 
 	return ok && len(value) > 0 && value[0] == s.token
+}
+
+func Test_hideAPIKey(t *testing.T) {
+	type args struct {
+		input string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "valid",
+			args: args{input: "https://example.com/list/sites?api_key=SECRET&api_version=1.0.0"},
+			want: "https://example.com/list/sites?api_key=<REDACTED>&api_version=1.0.0",
+		},
+		{
+			name: "last",
+			args: args{input: "https://example.com/list/sites?api_key=SECRET"},
+			want: "https://example.com/list/sites?api_key=<REDACTED>",
+		},
+		{
+			name: "no token",
+			args: args{input: "https://example.com/list/sites?api_version=1.0.0"},
+			want: "https://example.com/list/sites?api_version=1.0.0",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, hideAPIKey(tt.args.input), "hideAPIKey(%v)", tt.args.input)
+		})
+	}
 }
