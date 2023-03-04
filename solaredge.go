@@ -1,3 +1,18 @@
+// Package solaredge is a client library for the SolarEdge Cloud-Based Monitoring Platform. The API gives access
+// to data saved in the monitoring servers for your installed SolarEdge equipment and its performance (i.e. generated power & energy).
+//
+// The implementation is based on SolarEdge's official [API documentation].
+//
+// The current version of this library implements the following sections of the API:
+//
+//   - Site Data API
+//   - Site Equipment API
+//   - API Versions
+//
+// Access to SolarEdge data is determined by the user's API Key & installation. If your situation gives you access
+// to the Accounts List, Meters or Sensors API, feel free to get in touch with me to get these implemented in this library.
+//
+// [API documentation]: https://knowledge-center.solaredge.com/sites/kc/files/se_monitoring_api.pdf
 package solaredge
 
 import (
@@ -56,13 +71,11 @@ func (c *Client) call(ctx context.Context, endpoint string, args url.Values, res
 		_ = resp.Body.Close()
 	}()
 
-	//body, err := io.ReadAll(io.TeeReader(resp.Body, os.Stdout))
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("read: %w", err)
 	}
 
-	// TODO: HTTP 403 contains error description (covers more than just "bad token")
 	switch resp.StatusCode {
 	case http.StatusOK:
 		if err = json.Unmarshal(body, response); err != nil {

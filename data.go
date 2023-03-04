@@ -81,8 +81,7 @@ func (c *Client) GetSites(ctx context.Context) ([]Site, error) {
 		} `json:"sites"`
 	}
 
-	args := url.Values{}
-	err := c.call(ctx, "/sites/list", args, &response)
+	err := c.call(ctx, "/sites/list", url.Values{}, &response)
 	return response.Sites.Site, err
 }
 

@@ -9,7 +9,7 @@ type MeterEnergyDetails struct {
 
 type Meter struct {
 	MeterSerialNumber          string  `json:"meterSerialNumber"`
-	ConnectedSolaredgeDeviceSN string  `json:"connectedSolaredgeDeviceSN"`
+	ConnectedSolarEdgeDeviceSN string  `json:"connectedSolaredgeDeviceSN"`
 	Model                      string  `json:"model"`
 	MeterType                  string  `json:"meterType"`
 	Values                     []Value `json:"values"`

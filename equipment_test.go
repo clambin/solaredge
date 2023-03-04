@@ -81,7 +81,7 @@ func TestClient_GetInventory(t *testing.T) {
 				SN:                  "SN1234",
 				CommunicationMethod: "ETHERNET",
 				ConnectedOptimizers: 20,
-				CpuVersion:          "1.0.0",
+				CPUVersion:          "1.0.0",
 				Manufacturer:        "foo",
 				Model:               "bar",
 				Name:                "snafu",

@@ -61,7 +61,7 @@ type InverterEquipment struct {
 	SN                  string `json:"SN"`
 	CommunicationMethod string `json:"communicationMethod"`
 	ConnectedOptimizers int    `json:"connectedOptimizers"`
-	CpuVersion          string `json:"cpuVersion"`
+	CPUVersion          string `json:"cpuVersion"`
 	Manufacturer        string `json:"manufacturer"`
 	Model               string `json:"model"`
 	Name                string `json:"name"`
@@ -73,15 +73,15 @@ type MeterEquipment struct {
 	Manufacturer               string `json:"manufacturer"`
 	Model                      string `json:"model"`
 	FirmwareVersion            string `json:"firmwareVersion"`
-	ConnectedSolaredgeDeviceSN string `json:"connectedSolaredgeDeviceSN"`
+	ConnectedSolarEdgeDeviceSN string `json:"connectedSolaredgeDeviceSN"`
 	Type                       string `json:"type"`
 	Form                       string `json:"form"`
 }
 
 // SensorEquipment contains an sensor's name, model, manufacturer, serial number, etc.
 type SensorEquipment struct {
-	ConnectedSolaredgeDeviceSN string `json:"connectedSolaredgeDeviceSN"`
-	Id                         string `json:"id"`
+	ConnectedSolarEdgeDeviceSN string `json:"connectedSolaredgeDeviceSN"`
+	ID                         string `json:"id"`
 	ConnectedTo                string `json:"connectedTo"`
 	Category                   string `json:"category"`
 	Type                       string `json:"type"`
