@@ -54,16 +54,6 @@ func TestClient_Site_E2E(t *testing.T) {
 
 }
 
-func TestClient_GetSiteIDs(t *testing.T) {
-	c, s, _ := makeTestServer(nil)
-	defer s.Close()
-	siteIDs, err := c.GetSiteIDs(context.Background())
-
-	require.NoError(t, err)
-	require.Len(t, siteIDs, 1)
-	assert.Equal(t, 1, siteIDs[0])
-}
-
 func TestClient_GetSites(t *testing.T) {
 	c, s, _ := makeTestServer(nil)
 	defer s.Close()

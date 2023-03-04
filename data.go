@@ -9,31 +9,6 @@ import (
 // This file contains all supported APIs from the Site Data API section of the SolarEdge API specifications.
 // https://knowledge-center.solaredge.com/sites/kc/files/se_monitoring_api.pdf
 
-// GetSiteIDs returns all site IDs registered under the account associated with the supplied client token
-//
-// Deprecated: use GetSites instead
-func (c *Client) GetSiteIDs(ctx context.Context) (sites []int, err error) {
-	var sitesResponse struct {
-		Sites struct {
-			Count int `json:"count"`
-			Site  []struct {
-				ID int `json:"id"`
-			} `json:"site"`
-		} `json:"sites"`
-	}
-
-	args := url.Values{}
-	err = c.call(ctx, "/sites/list", args, &sitesResponse)
-
-	if err == nil {
-		for _, site := range sitesResponse.Sites.Site {
-			sites = append(sites, site.ID)
-		}
-	}
-
-	return
-}
-
 // Site contains details for an installation registered under the supplied API Token
 type Site struct {
 	ID               int     `json:"id"`
