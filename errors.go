@@ -10,7 +10,7 @@ import (
 type HTTPError struct {
 	StatusCode int
 	Status     string
-	Body       string
+	Body       []byte
 }
 
 var _ error = &HTTPError{}
@@ -27,8 +27,8 @@ func (e *HTTPError) Is(e2 error) bool {
 // ParseError wraps the error when failing to process the server response. Contains the original server response
 // that generated the error, as well as the json error that triggered the error.
 type ParseError struct {
-	Body string
 	Err  error
+	Body []byte
 }
 
 var _ error = &ParseError{}

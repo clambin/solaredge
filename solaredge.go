@@ -89,7 +89,7 @@ func (c *Client) call(ctx context.Context, endpoint string, args url.Values, res
 		if err = json.Unmarshal(body, response); err != nil {
 			err = &ParseError{
 				Err:  err,
-				Body: string(body),
+				Body: body,
 			}
 		}
 	case http.StatusForbidden:
@@ -98,7 +98,7 @@ func (c *Client) call(ctx context.Context, endpoint string, args url.Values, res
 		err = &HTTPError{
 			StatusCode: resp.StatusCode,
 			Status:     resp.Status,
-			Body:       string(body),
+			Body:       body,
 		}
 	}
 

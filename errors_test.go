@@ -64,14 +64,14 @@ func TestParseError(t *testing.T) {
 	}{
 		{
 			name:     "direct",
-			err:      &ParseError{Err: &json.SyntaxError{Offset: 10}, Body: "hello"},
+			err:      &ParseError{Err: &json.SyntaxError{Offset: 10}, Body: []byte("hello")},
 			other:    &ParseError{},
 			expectIs: true,
 			expectAs: true,
 		},
 		{
 			name:     "wrapped",
-			err:      fmt.Errorf("error: %w", &ParseError{Err: &json.SyntaxError{Offset: 10}, Body: "hello"}),
+			err:      fmt.Errorf("error: %w", &ParseError{Err: &json.SyntaxError{Offset: 10}, Body: []byte("hello")}),
 			other:    &ParseError{},
 			expectIs: true,
 			expectAs: true,
