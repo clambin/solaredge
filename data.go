@@ -284,9 +284,9 @@ type Battery struct {
 	ModelNumber    string `json:"modelNumber"`
 	TelemetryCount int    `json:"telemetryCount"`
 	Telemetries    []struct {
-		TimeStamp                string  `json:"timeStamp"`
+		TimeStamp                Time    `json:"timeStamp"`
 		Power                    float64 `json:"power"`
-		BatteryState             float64 `json:"batteryState"`
+		BatteryState             int     `json:"batteryState"`
 		LifeTimeEnergyCharged    float64 `json:"lifeTimeEnergyCharged"`
 		LifeTimeEnergyDischarged float64 `json:"lifeTimeEnergyDischarged"`
 		FullPackEnergyAvailable  float64 `json:"fullPackEnergyAvailable"`
