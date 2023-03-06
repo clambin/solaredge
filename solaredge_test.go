@@ -29,36 +29,36 @@ func TestBuildURL(t *testing.T) {
 		name     string
 		endpoint string
 		args     url.Values
-		pass     bool
-		expected string
+		want     string
+		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
 			name:     "no siteID",
 			endpoint: "/version/current",
 			args:     url.Values{},
-			pass:     true,
-			expected: s.URL + "/version/current?api_key=123&version=1.0.0",
+			want:     s.URL + "/version/current?api_key=123&version=1.0.0",
+			wantErr:  assert.NoError,
 		},
 		{
 			name:     "with siteID",
 			endpoint: "/site/%d/power",
 			args:     make(url.Values),
-			pass:     true,
-			expected: s.URL + "/site/1/power?api_key=123&version=1.0.0",
+			want:     s.URL + "/site/1/power?api_key=123&version=1.0.0",
+			wantErr:  assert.NoError,
 		},
 		{
 			name:     "with args",
 			endpoint: "/site/%d/power",
 			args:     url.Values{"foo": []string{"bar"}},
-			pass:     true,
-			expected: s.URL + "/site/1/power?api_key=123&foo=bar&version=1.0.0",
+			want:     s.URL + "/site/1/power?api_key=123&foo=bar&version=1.0.0",
+			wantErr:  assert.NoError,
 		},
 		{
 			name:     "no endpoint",
 			endpoint: "",
 			args:     url.Values{},
-			pass:     true,
-			expected: s.URL + "/?api_key=123&version=1.0.0",
+			want:     s.URL + "/?api_key=123&version=1.0.0",
+			wantErr:  assert.NoError,
 		},
 	}
 
@@ -66,12 +66,9 @@ func TestBuildURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			c := Client{Token: "123", apiURL: s.URL}
 			result, err := c.buildURL(context.TODO(), tt.endpoint, tt.args)
-			if !tt.pass {
-				assert.Error(t, err)
-				return
-			}
-			require.NoError(t, err)
-			assert.Equal(t, tt.expected, result)
+
+			assert.Equal(t, tt.want, result)
+			tt.wantErr(t, err)
 		})
 	}
 }
@@ -94,10 +91,10 @@ func Test_buildArgsFromTimeRange(t *testing.T) {
 		layout string
 	}
 	tests := []struct {
-		name string
-		args args
-		pass bool
-		want string
+		name    string
+		args    args
+		want    string
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "valid Time",
@@ -107,8 +104,8 @@ func Test_buildArgsFromTimeRange(t *testing.T) {
 				label:  "Time",
 				layout: "2006-01-02 15:04:05",
 			},
-			pass: true,
-			want: "endTime=2023-02-26+23%3A00%3A00&startTime=2023-02-01+12%3A00%3A00",
+			want:    "endTime=2023-02-26+23%3A00%3A00&startTime=2023-02-01+12%3A00%3A00",
+			wantErr: assert.NoError,
 		},
 		{
 			name: "valid Date",
@@ -118,8 +115,8 @@ func Test_buildArgsFromTimeRange(t *testing.T) {
 				label:  "Date",
 				layout: "2006-01-02",
 			},
-			pass: true,
-			want: "endDate=2023-02-26&startDate=2023-02-01",
+			want:    "endDate=2023-02-26&startDate=2023-02-01",
+			wantErr: assert.NoError,
 		},
 		{
 			name: "no end date",
@@ -128,7 +125,7 @@ func Test_buildArgsFromTimeRange(t *testing.T) {
 				label:  "Date",
 				layout: "2006-01-02",
 			},
-			pass: false,
+			wantErr: assert.Error,
 		},
 		{
 			name: "no start date",
@@ -137,7 +134,7 @@ func Test_buildArgsFromTimeRange(t *testing.T) {
 				label:  "Date",
 				layout: "2006-01-02",
 			},
-			pass: false,
+			wantErr: assert.Error,
 		},
 		{
 			name: "no dates",
@@ -145,18 +142,14 @@ func Test_buildArgsFromTimeRange(t *testing.T) {
 				label:  "Date",
 				layout: "2006-01-02",
 			},
-			pass: false,
+			wantErr: assert.Error,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := buildArgsFromTimeRange(tt.args.start, tt.args.end, tt.args.label, tt.args.layout)
-			if !tt.pass {
-				assert.Error(t, err)
-				return
-			}
-			require.NoError(t, err)
 			assert.Equal(t, tt.want, got.Encode())
+			tt.wantErr(t, err)
 		})
 	}
 }
@@ -368,7 +361,7 @@ func Test_hideAPIKey(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, hideAPIKey(tt.args.input), "hideAPIKey(%v)", tt.args.input)
+			assert.Equal(t, tt.want, hideAPIKey(tt.args.input))
 		})
 	}
 }
