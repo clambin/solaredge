@@ -24,6 +24,8 @@ func TestInverter_GetTelemetry(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, inverters, 1)
 
+	assert.Equal(t, "SN1234", inverters[0].GetSerialNumber())
+
 	telemetries, err := inverters[0].GetTelemetry(ctx,
 		time.Date(2023, time.March, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2023, time.March, 2, 0, 0, 0, 0, time.UTC))

@@ -6,6 +6,21 @@ import (
 	"time"
 )
 
+// Inverter contains an inverter's name, model, manufacturer and serial number, as returned by GetInverters.
+type Inverter struct {
+	Manufacturer string `json:"manufacturer"`
+	Model        string `json:"model"`
+	Name         string `json:"name"`
+	SerialNumber string `json:"serialNumber"`
+	client       *Client
+	site         *Site
+}
+
+// GetSerialNumber returns the inverter's SerialNumber
+func (i *Inverter) GetSerialNumber() string {
+	return i.SerialNumber
+}
+
 // InverterTelemetry contains technical data for an inverter.
 type InverterTelemetry struct {
 	L1Data struct {
@@ -26,16 +41,6 @@ type InverterTelemetry struct {
 	Temperature           float64 `json:"temperature"`
 	TotalActivePower      float64 `json:"totalActivePower"`
 	TotalEnergy           float64 `json:"totalEnergy"`
-}
-
-// Inverter contains an inverter's name, model, manufacturer and serial number, as returned by GetInverters.
-type Inverter struct {
-	Manufacturer string `json:"manufacturer"`
-	Model        string `json:"model"`
-	Name         string `json:"name"`
-	SerialNumber string `json:"serialNumber"`
-	client       *Client
-	site         *Site
 }
 
 // GetTelemetry returns the measurements of the inverter within the specified time range.
@@ -68,6 +73,11 @@ type InverterEquipment struct {
 	Name                string `json:"name"`
 	client              *Client
 	site                *Site
+}
+
+// GetSerialNumber returns the inverter's SerialNumber
+func (i *InverterEquipment) GetSerialNumber() string {
+	return i.SN
 }
 
 // GetTelemetry returns the measurements of the inverter within the specified time range.
