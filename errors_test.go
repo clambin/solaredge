@@ -12,43 +12,40 @@ import (
 
 func TestHTTPError(t *testing.T) {
 	tests := []struct {
-		name     string
-		err      error
-		other    error
-		expectIs bool
-		expectAs bool
+		name        string
+		err         error
+		other       error
+		wantErrorIs func(assert.TestingT, error, error, ...interface{}) bool
 	}{
 		{
-			name:     "direct",
-			err:      &HTTPError{StatusCode: http.StatusForbidden, Status: "Forbidden"},
-			other:    &HTTPError{},
-			expectIs: true,
-			expectAs: true,
+			name:        "direct",
+			err:         &HTTPError{StatusCode: http.StatusForbidden, Status: "Forbidden"},
+			other:       &HTTPError{},
+			wantErrorIs: assert.ErrorIs,
 		},
 		{
-			name:     "wrapped",
-			err:      fmt.Errorf("error: %w", &HTTPError{StatusCode: http.StatusForbidden, Status: "Forbidden"}),
-			other:    &HTTPError{},
-			expectIs: true,
-			expectAs: true,
+			name:        "wrapped",
+			err:         fmt.Errorf("error: %w", &HTTPError{StatusCode: http.StatusForbidden, Status: "Forbidden"}),
+			other:       &HTTPError{},
+			wantErrorIs: assert.ErrorIs,
 		},
 		{
-			name:     "is not",
-			err:      &HTTPError{},
-			other:    errors.New("error"),
-			expectIs: false,
-			expectAs: true,
+			name:        "is not",
+			err:         &HTTPError{},
+			other:       errors.New("error"),
+			wantErrorIs: assert.NotErrorIs,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Error(t, tt.err)
-			assert.Equal(t, tt.expectIs, errors.Is(tt.err, tt.other))
-			var newErr *HTTPError
-			assert.Equal(t, tt.expectAs, errors.As(tt.err, &newErr))
-			if tt.expectAs {
-				assert.ErrorIs(t, newErr, &HTTPError{})
+			tt.wantErrorIs(t, tt.err, tt.other)
+
+			var httpError *HTTPError
+			if errors.Is(tt.err, httpError) {
+				assert.ErrorAs(t, tt.err, &httpError)
+				assert.ErrorIs(t, httpError, &HTTPError{})
 			}
 		})
 	}
@@ -56,42 +53,39 @@ func TestHTTPError(t *testing.T) {
 
 func TestParseError(t *testing.T) {
 	tests := []struct {
-		name     string
-		err      error
-		other    error
-		expectIs bool
-		expectAs bool
+		name        string
+		err         error
+		other       error
+		wantErrorIs func(assert.TestingT, error, error, ...interface{}) bool
 	}{
 		{
-			name:     "direct",
-			err:      &ParseError{Err: &json.SyntaxError{Offset: 10}, Body: []byte("hello")},
-			other:    &ParseError{},
-			expectIs: true,
-			expectAs: true,
+			name:        "direct",
+			err:         &ParseError{Err: &json.SyntaxError{Offset: 10}, Body: []byte("hello")},
+			other:       &ParseError{},
+			wantErrorIs: assert.ErrorIs,
 		},
 		{
-			name:     "wrapped",
-			err:      fmt.Errorf("error: %w", &ParseError{Err: &json.SyntaxError{Offset: 10}, Body: []byte("hello")}),
-			other:    &ParseError{},
-			expectIs: true,
-			expectAs: true,
+			name:        "wrapped",
+			err:         fmt.Errorf("error: %w", &ParseError{Err: &json.SyntaxError{Offset: 10}, Body: []byte("hello")}),
+			other:       &ParseError{},
+			wantErrorIs: assert.ErrorIs,
 		},
 		{
-			name:     "is not",
-			err:      &ParseError{},
-			other:    errors.New("error"),
-			expectIs: false,
-			expectAs: true,
+			name:        "is not",
+			err:         &ParseError{},
+			other:       errors.New("error"),
+			wantErrorIs: assert.NotErrorIs,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Error(t, tt.err)
-			assert.Equal(t, tt.expectIs, errors.Is(tt.err, tt.other))
+			tt.wantErrorIs(t, tt.err, tt.other)
+
 			var newErr *ParseError
-			assert.Equal(t, tt.expectAs, errors.As(tt.err, &newErr))
-			if tt.expectAs {
+			if errors.Is(tt.err, newErr) {
+				assert.ErrorAs(t, tt.err, &newErr)
 				assert.ErrorIs(t, newErr, &ParseError{})
 			}
 		})
@@ -149,5 +143,4 @@ func TestAPIError(t *testing.T) {
 			assert.Equal(t, "api error: "+tt.expected, err.Error())
 		})
 	}
-
 }

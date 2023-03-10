@@ -3,29 +3,27 @@ package solaredge
 import (
 	"context"
 	"net/url"
-	"time"
+	"strconv"
 )
 
 // This file contains all supported APIs from the Site Equipment API section of the SolarEdge API specifications.
 // https://knowledge-center.solaredge.com/sites/kc/files/se_monitoring_api.pdf
 
-// Inverter contains an inverter's name, model, manufacturer and serial number.
-type Inverter struct {
-	Manufacturer string `json:"manufacturer"`
-	Model        string `json:"model"`
-	Name         string `json:"name"`
-	SerialNumber string `json:"serialNumber"`
-}
-
 // GetInverters returns all inverters at the active site.
-func (c *Client) GetInverters(ctx context.Context) ([]Inverter, error) {
+func (s *Site) GetInverters(ctx context.Context) ([]Inverter, error) {
 	var output struct {
 		Reporters struct {
 			Count int        `json:"count"`
 			List  []Inverter `json:"list"`
 		} `json:"reporters"`
 	}
-	err := c.call(ctx, "/equipment/%d/list", url.Values{}, &output)
+	err := s.client.call(ctx, "/equipment/"+strconv.Itoa(s.ID)+"/list", url.Values{}, &output)
+	if err == nil {
+		for index := range output.Reporters.List {
+			output.Reporters.List[index].client = s.client
+			output.Reporters.List[index].site = s
+		}
+	}
 	return output.Reporters.List, err
 }
 
@@ -56,17 +54,6 @@ type GatewayEquipment struct {
 	SN              string `json:"SN"`
 }
 
-// InverterEquipment contains an inverter's name, model, manufacturer, serial number, etc.
-type InverterEquipment struct {
-	SN                  string `json:"SN"`
-	CommunicationMethod string `json:"communicationMethod"`
-	ConnectedOptimizers int    `json:"connectedOptimizers"`
-	CPUVersion          string `json:"cpuVersion"`
-	Manufacturer        string `json:"manufacturer"`
-	Model               string `json:"model"`
-	Name                string `json:"name"`
-}
-
 // MeterEquipment contains an meter's name, model, manufacturer, serial number, etc.
 type MeterEquipment struct {
 	Name                       string `json:"name"`
@@ -88,54 +75,20 @@ type SensorEquipment struct {
 }
 
 // GetInventory returns the full inventory of SolarEdge equipment at the active site.
-func (c *Client) GetInventory(ctx context.Context) (Inventory, error) {
+func (s *Site) GetInventory(ctx context.Context) (Inventory, error) {
 	var output struct {
 		Inventory Inventory `json:"inventory"`
 	}
-	err := c.call(ctx, "/site/%d/inventory", url.Values{}, &output)
-	return output.Inventory, err
-}
-
-// InverterTelemetry contains technical data for an inverter.
-type InverterTelemetry struct {
-	L1Data struct {
-		AcCurrent     float64 `json:"acCurrent"`
-		AcFrequency   float64 `json:"acFrequency"`
-		AcVoltage     float64 `json:"acVoltage"`
-		ActivePower   float64 `json:"activePower"`
-		ApparentPower float64 `json:"apparentPower"`
-		CosPhi        float64 `json:"cosPhi"`
-		ReactivePower float64 `json:"reactivePower"`
-	} `json:"L1Data"`
-	Time                  Time    `json:"date"`
-	DcVoltage             float64 `json:"dcVoltage"`
-	GroundFaultResistance float64 `json:"groundFaultResistance,omitempty"`
-	InverterMode          string  `json:"inverterMode"`
-	OperationMode         int     `json:"operationMode"`
-	PowerLimit            float64 `json:"powerLimit"`
-	Temperature           float64 `json:"temperature"`
-	TotalActivePower      float64 `json:"totalActivePower"`
-	TotalEnergy           float64 `json:"totalEnergy"`
-}
-
-// GetInverterTelemetry returns technical data for the inverter with the provided serialNr for a given timeframe.
-// Telemetry data is returned in 5-minute intervals.
-//
-// This API is limited to a one-week period. If the time range exceeds one week, an APIError is returned.
-//
-// NOTE: this may not be fully complete, as data returned for my account doesn't match the specifications.
-func (c *Client) GetInverterTelemetry(ctx context.Context, serialNr string, from, to time.Time) ([]InverterTelemetry, error) {
-	var output struct {
-		Data struct {
-			Count       int                 `json:"count"`
-			Telemetries []InverterTelemetry `json:"telemetries"`
-		} `json:"data"`
-	}
-	args, err := buildArgsFromTimeRange(from, to, "Time", "2006-01-02 03:04:05")
+	err := s.client.call(ctx, "/site/"+strconv.Itoa(s.ID)+"/inventory", url.Values{}, &output)
 	if err == nil {
-		err = c.call(ctx, "/equipment/%d/"+serialNr+"/data", args, &output)
+		for index := range output.Inventory.Inverters {
+			output.Inventory.Inverters[index].client = s.client
+			output.Inventory.Inverters[index].site = s
+
+		}
 	}
-	return output.Data.Telemetries, err
+
+	return output.Inventory, err
 }
 
 // ChangeLogEntry contains an equipment component replacement.
@@ -146,13 +99,13 @@ type ChangeLogEntry struct {
 }
 
 // GetChangeLog returns a list of equipment component replacements, ordered by date. This method is applicable to inverters, optimizers, batteries and gateways.
-func (c *Client) GetChangeLog(ctx context.Context, serialNr string) ([]ChangeLogEntry, error) {
+func (s *Site) GetChangeLog(ctx context.Context, serialNr string) ([]ChangeLogEntry, error) {
 	var output struct {
 		ChangeLog struct {
 			Count int              `json:"count"`
 			List  []ChangeLogEntry `json:"list"`
 		} `json:"ChangeLog"`
 	}
-	err := c.call(ctx, "/equipment/%d/"+serialNr+"/changeLog", url.Values{}, &output)
+	err := s.client.call(ctx, "/equipment/"+strconv.Itoa(s.ID)+"/"+serialNr+"/changeLog", url.Values{}, &output)
 	return output.ChangeLog.List, err
 }

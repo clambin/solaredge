@@ -3,10 +3,11 @@ package solaredge
 import (
 	"context"
 	"net/url"
+	"strconv"
 	"time"
 )
 
-// This file contains all supported APIs from the Site Data API section of the SolarEdge API specifications.
+// This file contains APIs from the Site Data API section of the SolarEdge API specifications.
 // https://knowledge-center.solaredge.com/sites/kc/files/se_monitoring_api.pdf
 
 // Site contains details for an installation registered under the supplied API Token
@@ -45,34 +46,13 @@ type Site struct {
 		DETAILS    string `json:"DETAILS"`
 		OVERVIEW   string `json:"OVERVIEW"`
 	} `json:"uris"`
+	client *Client
 }
 
-// GetSites returns all sites registered under the account associated with the supplied API Token
-func (c *Client) GetSites(ctx context.Context) ([]Site, error) {
-	var response struct {
-		Sites struct {
-			Count int    `json:"count"`
-			Site  []Site `json:"site"`
-		} `json:"sites"`
-	}
-
-	err := c.call(ctx, "/sites/list", url.Values{}, &response)
-	return response.Sites.Site, err
-}
-
-// GetSiteDetails returns the site details for the active site
-func (c *Client) GetSiteDetails(ctx context.Context) (Site, error) {
-	var output struct {
-		Details Site `json:"details"`
-	}
-	err := c.call(ctx, "/site/%d/details", url.Values{}, &output)
-	return output.Details, err
-}
-
-// GetSiteDataPeriod returns the energy production start and end date for the active site.
+// GetDataPeriod returns the energy production start and end date for the active site.
 //
 // Note: unlike the example in the specs, this only returns the date, not the time of day.
-func (c *Client) GetSiteDataPeriod(ctx context.Context) (time.Time, time.Time, error) {
+func (s *Site) GetDataPeriod(ctx context.Context) (time.Time, time.Time, error) {
 	var output struct {
 		DataPeriod struct {
 			StartDate Date `json:"startDate"`
@@ -80,7 +60,7 @@ func (c *Client) GetSiteDataPeriod(ctx context.Context) (time.Time, time.Time, e
 		} `json:"dataPeriod"`
 	}
 
-	err := c.call(ctx, "/site/%d/dataPeriod", url.Values{}, &output)
+	err := s.client.call(ctx, "/site/"+strconv.Itoa(s.ID)+"/dataPeriod", url.Values{}, &output)
 	return time.Time(output.DataPeriod.StartDate), time.Time(output.DataPeriod.EndDate), err
 }
 
@@ -92,7 +72,7 @@ type Energy struct {
 	Values     []Value `json:"values"`
 }
 
-// GetSiteEnergy returns the energy produced by the site for a given time range, with a given time resolution (timeUnit)
+// GetEnergy returns the energy produced by the site for a given time range, with a given time resolution (timeUnit)
 //
 // timeUnit must be one of the following values: QUARTER_OF_AN_HOUR, HOUR, DAY, WEEK, MONTH, YEAR.
 //
@@ -101,7 +81,7 @@ type Energy struct {
 //   - For DAY, the time range cannot exceed one year.
 //
 // If these conditions are not met, an APIError is returned.
-func (c *Client) GetSiteEnergy(ctx context.Context, timeUnit string, start, end time.Time) (Energy, error) {
+func (s *Site) GetEnergy(ctx context.Context, timeUnit string, start, end time.Time) (Energy, error) {
 	var output struct {
 		Energy Energy `json:"energy"`
 	}
@@ -109,7 +89,7 @@ func (c *Client) GetSiteEnergy(ctx context.Context, timeUnit string, start, end 
 	if err == nil {
 		args.Set("timeUnit", timeUnit)
 	}
-	err = c.call(ctx, "/site/%d/energy", args, &output)
+	err = s.client.call(ctx, "/site/"+strconv.Itoa(s.ID)+"/energy", args, &output)
 	return output.Energy, err
 }
 
@@ -119,16 +99,16 @@ type TimeFrameEnergy struct {
 	Unit   string  `json:"unit"`
 }
 
-// GetSiteTimeFrameEnergy returns the total energy produced for a given period.
+// GetTimeFrameEnergy returns the total energy produced for a given period.
 //
 // Note: the period between end and start must not exceed one year. If it does, a APIError is returned.
-func (c *Client) GetSiteTimeFrameEnergy(ctx context.Context, start, end time.Time) (TimeFrameEnergy, error) {
+func (s *Site) GetTimeFrameEnergy(ctx context.Context, start, end time.Time) (TimeFrameEnergy, error) {
 	var output struct {
 		TimeFrameEnergy TimeFrameEnergy `json:"timeFrameEnergy"`
 	}
 	args, err := buildArgsFromTimeRange(start, end, "Date", "2006-01-02")
 	if err == nil {
-		err = c.call(ctx, "/site/%d/timeFrameEnergy", args, &output)
+		err = s.client.call(ctx, "/site/"+strconv.Itoa(s.ID)+"/timeFrameEnergy", args, &output)
 	}
 	return output.TimeFrameEnergy, err
 }
@@ -143,14 +123,14 @@ type Power struct {
 // GetPower returns the site power measurements in 15 minutes resolution.
 //
 // Note: This API is limited to a one-month period. If the provided time range exceeds one month, an APIError is returned.
-func (c *Client) GetPower(ctx context.Context, start, end time.Time) (Power, error) {
+func (s *Site) GetPower(ctx context.Context, start, end time.Time) (Power, error) {
 	var powerStats struct {
 		Power Power `json:"power"`
 	}
 
 	args, err := buildArgsFromTimeRange(start, end, "Time", "2006-01-02 15:04:05")
 	if err == nil {
-		err = c.call(ctx, "/site/%d/power", args, &powerStats)
+		err = s.client.call(ctx, "/site/"+strconv.Itoa(s.ID)+"/power", args, &powerStats)
 	}
 	return powerStats.Power, err
 }
@@ -180,11 +160,11 @@ type PowerOverview struct {
 }
 
 // GetPowerOverview returns the energy produced at the site for its entire lifetime, current year, month and day (in Wh) and current power (in W).
-func (c *Client) GetPowerOverview(ctx context.Context) (PowerOverview, error) {
+func (s *Site) GetPowerOverview(ctx context.Context) (PowerOverview, error) {
 	var response struct {
 		Overview PowerOverview `json:"overview"`
 	}
-	err := c.call(ctx, "/site/%d/overview", url.Values{}, &response)
+	err := s.client.call(ctx, "/site/"+strconv.Itoa(s.ID)+"/overview", url.Values{}, &response)
 	return response.Overview, err
 }
 
@@ -204,13 +184,13 @@ type MeterReadings struct {
 // GetPowerDetails returns site power measurements from meters such as consumption, export (feed-in), import (purchase), etc.
 //
 // Note: This API is limited to one-month period. If the provided time range exceeds one month, an APIError is returned.
-func (c *Client) GetPowerDetails(ctx context.Context, start, end time.Time) (PowerDetails, error) {
+func (s *Site) GetPowerDetails(ctx context.Context, start, end time.Time) (PowerDetails, error) {
 	var response struct {
 		PowerDetails PowerDetails `json:"powerDetails"`
 	}
 	args, err := buildArgsFromTimeRange(start, end, "Time", "2006-01-02 03:04:05")
 	if err == nil {
-		err = c.call(ctx, "/site/%d/powerDetails", args, &response)
+		err = s.client.call(ctx, "/site/"+strconv.Itoa(s.ID)+"/powerDetails", args, &response)
 	}
 	return response.PowerDetails, err
 }
@@ -232,16 +212,16 @@ type EnergyDetails struct {
 //   - For DAY, the time range cannot exceed one year.
 //
 // If these conditions are not met, an APIError is returned.
-func (c *Client) GetEnergyDetails(ctx context.Context, timeUnit string, start, end time.Time) (EnergyDetails, error) {
-	var output struct {
+func (s *Site) GetEnergyDetails(ctx context.Context, timeUnit string, start, end time.Time) (EnergyDetails, error) {
+	var response struct {
 		EnergyDetails EnergyDetails `json:"energyDetails"`
 	}
 	args, err := buildArgsFromTimeRange(start, end, "Time", "2006-01-02 03:04:05")
 	if err == nil {
 		args.Set("timeUnit", timeUnit)
-		err = c.call(ctx, "/site/%d/energyDetails", args, &output)
+		err = s.client.call(ctx, "/site/"+strconv.Itoa(s.ID)+"/energyDetails", args, &response)
 	}
-	return output.EnergyDetails, err
+	return response.EnergyDetails, err
 }
 
 // CurrentPowerFlow contains current power flow between all elements of the site including PV array, storage (battery), loads (consumption) and grid.
@@ -269,12 +249,12 @@ type PowerFlowReading struct {
 }
 
 // GetPowerFlow returns the current power flow between all elements of the site including PV array, storage (battery), loads (consumption) and grid.
-func (c *Client) GetPowerFlow(ctx context.Context) (CurrentPowerFlow, error) {
-	var output struct {
+func (s *Site) GetPowerFlow(ctx context.Context) (CurrentPowerFlow, error) {
+	var response struct {
 		SiteCurrentPowerFlow CurrentPowerFlow `json:"siteCurrentPowerFlow"`
 	}
-	err := c.call(ctx, "/site/%d/currentPowerFlow", url.Values{}, &output)
-	return output.SiteCurrentPowerFlow, err
+	err := s.client.call(ctx, "/site/"+strconv.Itoa(s.ID)+"/currentPowerFlow", url.Values{}, &response)
+	return response.SiteCurrentPowerFlow, err
 }
 
 // Battery contains detailed storage information from batteries: the state of energy, power and lifetime energy.
@@ -298,8 +278,8 @@ type Battery struct {
 // GetStorageData returns detailed information from batteries installed at the active site.
 //
 // This API is limited to a one-week period. If the time range exceeds one week, an APIError is returned.
-func (c *Client) GetStorageData(ctx context.Context, start, end time.Time) ([]Battery, error) {
-	var output struct {
+func (s *Site) GetStorageData(ctx context.Context, start, end time.Time) ([]Battery, error) {
+	var response struct {
 		StorageData struct {
 			BatteryCount int       `json:"batteryCount"`
 			Batteries    []Battery `json:"batteries"`
@@ -307,9 +287,9 @@ func (c *Client) GetStorageData(ctx context.Context, start, end time.Time) ([]Ba
 	}
 	args, err := buildArgsFromTimeRange(start, end, "Time", "2006-01-02 03:04:05")
 	if err == nil {
-		err = c.call(ctx, "/site/%d/storageData", args, &output)
+		err = s.client.call(ctx, "/site/"+strconv.Itoa(s.ID)+"/storageData", args, &response)
 	}
-	return output.StorageData.Batteries, err
+	return response.StorageData.Batteries, err
 }
 
 // TODO
@@ -330,10 +310,10 @@ type EnvBenefits struct {
 }
 
 // GetEnvBenefits returns all environmental benefits based on site energy production: gas emissions saved, equivalent trees planted and light bulbs powered for a day.
-func (c *Client) GetEnvBenefits(ctx context.Context) (EnvBenefits, error) {
-	var output struct {
+func (s *Site) GetEnvBenefits(ctx context.Context) (EnvBenefits, error) {
+	var response struct {
 		EnvBenefits EnvBenefits `json:"envBenefits"`
 	}
-	err := c.call(ctx, "/site/%d/envBenefits", url.Values{}, &output)
-	return output.EnvBenefits, err
+	err := s.client.call(ctx, "/site/"+strconv.Itoa(s.ID)+"/envBenefits", url.Values{}, &response)
+	return response.EnvBenefits, err
 }

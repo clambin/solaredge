@@ -1,25 +1,18 @@
-package solaredge
+package solaredge_test
 
 import (
 	"context"
+	"github.com/clambin/solaredge"
+	"github.com/clambin/solaredge/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"net/http"
 	"testing"
 )
 
 func TestClient_GetCurrentAPIVersion(t *testing.T) {
-	c, s, _ := makeTestServer(struct {
-		Version struct {
-			Release string `json:"release"`
-		} `json:"version"`
-	}{
-		Version: struct {
-			Release string `json:"release"`
-		}{
-			Release: "1.0.0",
-		},
-	})
-	defer s.Close()
+	c := solaredge.Client{Token: "1234"}
+	c.HTTPClient = &http.Client{Transport: &testutil.Server{Token: "1234"}}
 
 	version, err := c.GetCurrentAPIVersion(context.Background())
 	require.NoError(t, err)
@@ -27,19 +20,8 @@ func TestClient_GetCurrentAPIVersion(t *testing.T) {
 }
 
 func TestClient_GetSupportedAPIVersions(t *testing.T) {
-	c, s, _ := makeTestServer(struct {
-		Supported []struct {
-			Release string `json:"release"`
-		} `json:"supported"`
-	}{
-		Supported: []struct {
-			Release string `json:"release"`
-		}{
-			{Release: "0.9.9"},
-			{Release: "1.0.0"},
-		},
-	})
-	defer s.Close()
+	c := solaredge.Client{Token: "1234"}
+	c.HTTPClient = &http.Client{Transport: &testutil.Server{Token: "1234"}}
 
 	version, err := c.GetSupportedAPIVersions(context.Background())
 	require.NoError(t, err)

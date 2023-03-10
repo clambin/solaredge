@@ -10,7 +10,7 @@
 //   - API Versions
 //
 // Access to SolarEdge data is determined by the user's API Key & installation. If your situation gives you access
-// to the Accounts List, Meters or Sensors API, feel free to get in touch with me to get these implemented in this library.
+// to the Accounts List, Meters or Sensors API, feel free to get in touch to get these implemented in this library.
 //
 // [API documentation]: https://knowledge-center.solaredge.com/sites/kc/files/se_monitoring_api.pdf
 package solaredge
@@ -24,9 +24,6 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
-	"strconv"
-	"strings"
-	"sync"
 	"time"
 )
 
@@ -36,10 +33,6 @@ type Client struct {
 	Token string
 	// HTTPClient specifies the http client to use. Defaults to http.DefaultClient
 	HTTPClient *http.Client
-
-	lock         sync.Mutex
-	activeSiteID int
-	apiURL       string
 }
 
 const (
@@ -47,17 +40,10 @@ const (
 )
 
 func (c *Client) call(ctx context.Context, endpoint string, args url.Values, response any) error {
-	fullURL, err := c.buildURL(ctx, endpoint, args)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
+	req, err := c.buildRequest(ctx, endpoint, args)
 	if err != nil {
 		return fmt.Errorf("failed to create client request: %w", err)
 	}
-
-	req.Header.Set("Accept", "application/json")
 
 	httpClient := c.HTTPClient
 	if httpClient == nil {
@@ -70,7 +56,6 @@ func (c *Client) call(ctx context.Context, endpoint string, args url.Values, res
 		var urlError *url.Error
 		if errors.As(err, &urlError) {
 			urlError.URL = hideAPIKey(urlError.URL)
-			err = urlError
 		}
 		return err
 	}
@@ -105,62 +90,19 @@ func (c *Client) call(ctx context.Context, endpoint string, args url.Values, res
 	return err
 }
 
-func (c *Client) initialize(ctx context.Context) error {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-
-	if c.activeSiteID > 0 {
-		return nil
-	}
-	sites, err := c.GetSites(ctx)
-	if err != nil {
-		return err
-	}
-	if len(sites) == 0 {
-		return fmt.Errorf("no sites found")
-	}
-	c.activeSiteID = sites[0].ID
-	return nil
-}
-
-// SetActiveSiteID sets the active site
-func (c *Client) SetActiveSiteID(id int) {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-	c.activeSiteID = id
-}
-
-func (c *Client) getActiveSiteID() int {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-	return c.activeSiteID
-}
-
-func (c *Client) buildURL(ctx context.Context, endpoint string, args url.Values) (string, error) {
-	target := apiURL
-	if c.apiURL != "" {
-		target = c.apiURL
-	}
-
-	fullURL, err := url.Parse(target)
-	if err != nil {
-		return "", err
-	}
-
+func (c *Client) buildRequest(ctx context.Context, endpoint string, args url.Values) (*http.Request, error) {
 	if endpoint == "" {
 		endpoint = "/"
-	} else if strings.Contains(endpoint, "%d") {
-		if err = c.initialize(ctx); err != nil {
-			return "", fmt.Errorf("init: %w", err)
-		}
-		endpoint = strings.Replace(endpoint, "%d", strconv.Itoa(c.getActiveSiteID()), 1)
 	}
-
-	fullURL.Path = endpoint
 	args.Add("api_key", c.Token)
 	args.Add("version", "1.0.0")
-	fullURL.RawQuery = args.Encode()
-	return fullURL.String(), nil
+	fullURL := apiURL + endpoint + "?" + args.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
+	if err == nil {
+		req.Header.Set("Accept", "application/json")
+	}
+	return req, err
 }
 
 func buildArgsFromTimeRange(start, end time.Time, label, layout string) (url.Values, error) {
