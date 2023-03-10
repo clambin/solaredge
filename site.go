@@ -49,6 +49,11 @@ type Site struct {
 	client *Client
 }
 
+// GetID returns the site's ID
+func (s *Site) GetID() int {
+	return s.ID
+}
+
 // GetDataPeriod returns the energy production start and end date for the active site.
 //
 // Note: unlike the example in the specs, this only returns the date, not the time of day.

@@ -11,6 +11,19 @@ import (
 	"time"
 )
 
+func TestSite_GetID(t *testing.T) {
+	c := solaredge.Client{
+		Token:      "1234",
+		HTTPClient: &http.Client{Transport: &testutil.Server{Token: "1234"}},
+	}
+	ctx := context.Background()
+
+	sites, err := c.GetSites(ctx)
+	require.NoError(t, err)
+	require.Len(t, sites, 1)
+	assert.Equal(t, 1, sites[0].GetID())
+}
+
 func TestSite_GetDataPeriod(t *testing.T) {
 	c := solaredge.Client{
 		Token:      "1234",
