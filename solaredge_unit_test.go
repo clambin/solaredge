@@ -24,7 +24,7 @@ func TestBuildURL(t *testing.T) {
 		{
 			name:     "with siteID",
 			endpoint: "/site/1/power",
-			args:     make(url.Values),
+			args:     url.Values{},
 			want:     "https://monitoringapi.solaredge.com/site/1/power?api_key=123&version=1.0.0",
 		},
 		{
@@ -123,33 +123,30 @@ func Test_buildArgsFromTimeRange(t *testing.T) {
 }
 
 func Test_hideAPIKey(t *testing.T) {
-	type args struct {
-		input string
-	}
 	tests := []struct {
-		name string
-		args args
-		want string
+		name  string
+		input string
+		want  string
 	}{
 		{
-			name: "valid",
-			args: args{input: "https://example.com/list/sites?api_key=SECRET&api_version=1.0.0"},
-			want: "https://example.com/list/sites?api_key=<REDACTED>&api_version=1.0.0",
+			name:  "valid",
+			input: "https://example.com/list/sites?api_key=SECRET&api_version=1.0.0",
+			want:  "https://example.com/list/sites?api_key=<REDACTED>&api_version=1.0.0",
 		},
 		{
-			name: "last",
-			args: args{input: "https://example.com/list/sites?api_key=SECRET"},
-			want: "https://example.com/list/sites?api_key=<REDACTED>",
+			name:  "last",
+			input: "https://example.com/list/sites?api_key=SECRET",
+			want:  "https://example.com/list/sites?api_key=<REDACTED>",
 		},
 		{
-			name: "no token",
-			args: args{input: "https://example.com/list/sites?api_version=1.0.0"},
-			want: "https://example.com/list/sites?api_version=1.0.0",
+			name:  "no token",
+			input: "https://example.com/list/sites?api_version=1.0.0",
+			want:  "https://example.com/list/sites?api_version=1.0.0",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, hideAPIKey(tt.args.input))
+			assert.Equal(t, tt.want, hideAPIKey(tt.input))
 		})
 	}
 }

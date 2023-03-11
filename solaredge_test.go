@@ -26,6 +26,7 @@ func TestClient_Authentication(t *testing.T) {
 
 	require.Error(t, err)
 	require.ErrorIs(t, err, &solaredge.APIError{})
+	assert.Equal(t, "api error: invalid token", err.Error())
 
 	c.Token = goodToken
 	_, err = c.GetSites(context.Background())

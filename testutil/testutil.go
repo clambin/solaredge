@@ -56,9 +56,11 @@ type Server struct {
 
 // RoundTrip implements the http.RoundTripper interface.
 func (s *Server) RoundTrip(r *http.Request) (*http.Response, error) {
-	//fmt.Println(r.URL.Path)
 	if !s.validToken(r) {
-		return &http.Response{StatusCode: http.StatusForbidden}, nil
+		return &http.Response{
+			StatusCode: http.StatusForbidden,
+			Body:       io.NopCloser(bytes.NewBufferString(`{ "String": "invalid token" }`)),
+		}, nil
 	}
 
 	responses := s.getResponses()
