@@ -39,7 +39,7 @@ type SensorData struct {
 // TODO: returns 404?
 
 func (c *Client) GetSensorData(ctx context.Context, from, to time.Time) ([]SensorData, error) {
-	args, err := buildArgsFromTimeRange(from, to, "Date", "2006-01-02 03:04:05")
+	args, err := buildArgsFromTimeRange(from, to, "Date", "2006-01-02 15:04:05")
 	if err != nil {
 		return nil, err
 	}

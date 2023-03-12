@@ -18,7 +18,7 @@ type Meter struct {
 // TODO: doesn't return any data?
 
 func (c *Client) GetMeters(ctx context.Context, timeUnit string, start, end time.Time) (MeterEnergyDetails, error) {
-	args, err := buildArgsFromTimeRange(start, end, "Time", "2006-01-02 03:04:05")
+	args, err := buildArgsFromTimeRange(start, end, "Time", "2006-01-02 15:04:05")
 	if err != nil {
 		return MeterEnergyDetails{}, err
 	}

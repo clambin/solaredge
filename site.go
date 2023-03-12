@@ -106,7 +106,7 @@ type TimeFrameEnergy struct {
 
 // GetTimeFrameEnergy returns the total energy produced for a given period.
 //
-// Note: the period between end and start must not exceed one year. If it does, a APIError is returned.
+// Note: the period between end and start must not exceed one year. If it does, an APIError is returned.
 func (s *Site) GetTimeFrameEnergy(ctx context.Context, start, end time.Time) (TimeFrameEnergy, error) {
 	var output struct {
 		TimeFrameEnergy TimeFrameEnergy `json:"timeFrameEnergy"`
@@ -193,7 +193,7 @@ func (s *Site) GetPowerDetails(ctx context.Context, start, end time.Time) (Power
 	var response struct {
 		PowerDetails PowerDetails `json:"powerDetails"`
 	}
-	args, err := buildArgsFromTimeRange(start, end, "Time", "2006-01-02 03:04:05")
+	args, err := buildArgsFromTimeRange(start, end, "Time", "2006-01-02 15:04:05")
 	if err == nil {
 		err = s.client.call(ctx, "/site/"+strconv.Itoa(s.ID)+"/powerDetails", args, &response)
 	}
@@ -221,7 +221,7 @@ func (s *Site) GetEnergyDetails(ctx context.Context, timeUnit string, start, end
 	var response struct {
 		EnergyDetails EnergyDetails `json:"energyDetails"`
 	}
-	args, err := buildArgsFromTimeRange(start, end, "Time", "2006-01-02 03:04:05")
+	args, err := buildArgsFromTimeRange(start, end, "Time", "2006-01-02 15:04:05")
 	if err == nil {
 		args.Set("timeUnit", timeUnit)
 		err = s.client.call(ctx, "/site/"+strconv.Itoa(s.ID)+"/energyDetails", args, &response)
@@ -290,7 +290,7 @@ func (s *Site) GetStorageData(ctx context.Context, start, end time.Time) ([]Batt
 			Batteries    []Battery `json:"batteries"`
 		} `json:"storageData"`
 	}
-	args, err := buildArgsFromTimeRange(start, end, "Time", "2006-01-02 03:04:05")
+	args, err := buildArgsFromTimeRange(start, end, "Time", "2006-01-02 15:04:05")
 	if err == nil {
 		err = s.client.call(ctx, "/site/"+strconv.Itoa(s.ID)+"/storageData", args, &response)
 	}

@@ -55,7 +55,7 @@ func (i *Inverter) GetTelemetry(ctx context.Context, from, to time.Time) ([]Inve
 			Telemetries []InverterTelemetry `json:"telemetries"`
 		} `json:"data"`
 	}
-	args, err := buildArgsFromTimeRange(from, to, "Time", "2006-01-02 03:04:05")
+	args, err := buildArgsFromTimeRange(from, to, "Time", "2006-01-02 15:04:05")
 	if err == nil {
 		err = i.client.call(ctx, "/equipment/"+strconv.Itoa(i.site.ID)+"/"+i.SerialNumber+"/data", args, &output)
 	}
@@ -92,7 +92,7 @@ func (i *InverterEquipment) GetTelemetry(ctx context.Context, from, to time.Time
 			Telemetries []InverterTelemetry `json:"telemetries"`
 		} `json:"data"`
 	}
-	args, err := buildArgsFromTimeRange(from, to, "Time", "2006-01-02 03:04:05")
+	args, err := buildArgsFromTimeRange(from, to, "Time", "2006-01-02 15:04:05")
 	if err == nil {
 		err = i.client.call(ctx, "/equipment/"+strconv.Itoa(i.site.ID)+"/"+i.SN+"/data", args, &output)
 	}
