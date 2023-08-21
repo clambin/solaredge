@@ -3,6 +3,7 @@ package solaredge
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"golang.org/x/net/html"
 )
 
@@ -20,7 +21,8 @@ func (e *HTTPError) Error() string { return e.Status }
 
 // Is return true if e2 is an HTTPError
 func (e *HTTPError) Is(e2 error) bool {
-	_, ok := e2.(*HTTPError)
+	var HTTPError *HTTPError
+	ok := errors.As(e2, &HTTPError)
 	return ok
 }
 
@@ -45,7 +47,8 @@ func (e *ParseError) Unwrap() error {
 
 // Is returns true if e2 is a ParseError
 func (e *ParseError) Is(e2 error) bool {
-	_, ok := e2.(*ParseError)
+	var parseError *ParseError
+	ok := errors.As(e2, &parseError)
 	return ok
 }
 
@@ -93,19 +96,19 @@ func makeAPIErrorFromHTML(body []byte) *APIError {
 	var atMessage bool
 	var message string
 
-	tkn := html.NewTokenizer(bytes.NewBuffer(body))
+	token := html.NewTokenizer(bytes.NewBuffer(body))
 loop:
 	for {
-		switch tkn.Next() {
+		switch token.Next() {
 		case html.ErrorToken:
 			break loop
 		case html.TextToken:
-			tok := tkn.Token()
+			currentToken := token.Token()
 			if atMessage {
-				message = tok.String()
+				message = currentToken.String()
 				break loop
 			}
-			if tok.String() == "Message" {
+			if currentToken.String() == "Message" {
 				atMessage = true
 			}
 		}

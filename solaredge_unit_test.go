@@ -134,6 +134,11 @@ func Test_hideAPIKey(t *testing.T) {
 			want:  "https://example.com/list/sites?api_key=<REDACTED>&api_version=1.0.0",
 		},
 		{
+			name:  "alphanumeric",
+			input: "https://example.com/list/sites?api_key=12345ABCD&api_version=1.0.0",
+			want:  "https://example.com/list/sites?api_key=<REDACTED>&api_version=1.0.0",
+		},
+		{
 			name:  "last",
 			input: "https://example.com/list/sites?api_key=SECRET",
 			want:  "https://example.com/list/sites?api_key=<REDACTED>",

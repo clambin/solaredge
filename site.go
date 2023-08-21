@@ -142,26 +142,23 @@ func (s *Site) GetPower(ctx context.Context, start, end time.Time) (Power, error
 
 // PowerOverview contains the energy produced at a site for its entire lifetime, current year, month and day (in Wh) and current power (in W).
 type PowerOverview struct {
-	LastUpdateTime Time `json:"lastUpdateTime"`
-	LifeTimeData   struct {
-		Energy  float64 `json:"energy"`
-		Revenue float64 `json:"revenue"`
-	} `json:"lifeTimeData"`
-	LastYearData struct {
-		Energy  float64 `json:"energy"`
-		Revenue float64 `json:"revenue"`
-	} `json:"lastYearData"`
-	LastMonthData struct {
-		Energy  float64 `json:"energy"`
-		Revenue float64 `json:"revenue"`
-	} `json:"lastMonthData"`
-	LastDayData struct {
-		Energy  float64 `json:"energy"`
-		Revenue float64 `json:"revenue"`
-	} `json:"lastDayData"`
-	CurrentPower struct {
-		Power float64 `json:"power"`
-	} `json:"currentPower"`
+	LastUpdateTime Time           `json:"lastUpdateTime"`
+	LifeTimeData   EnergyOverview `json:"lifeTimeData"`
+	LastYearData   EnergyOverview `json:"lastYearData"`
+	LastMonthData  EnergyOverview `json:"lastMonthData"`
+	LastDayData    EnergyOverview `json:"lastDayData"`
+	CurrentPower   CurrentPower   `json:"currentPower"`
+}
+
+// EnergyOverview contains the energy produced in PowerOverview
+type EnergyOverview struct {
+	Energy  float64 `json:"energy"`
+	Revenue float64 `json:"revenue"`
+}
+
+// CurrentPower contains the current power output, as contained in PowerOverview
+type CurrentPower struct {
+	Power float64 `json:"power"`
 }
 
 // GetPowerOverview returns the energy produced at the site for its entire lifetime, current year, month and day (in Wh) and current power (in W).
