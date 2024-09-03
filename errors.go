@@ -71,8 +71,8 @@ func (e *APIError) Error() string {
 
 // Is returns true if e2 is a ParseError
 func (e *APIError) Is(e2 error) bool {
-	_, ok := e2.(*APIError)
-	return ok
+	var APIError *APIError
+	return errors.As(e2, &APIError)
 }
 
 func makeAPIError(body []byte) *APIError {
@@ -111,6 +111,8 @@ loop:
 			if currentToken.String() == "Message" {
 				atMessage = true
 			}
+		default:
+			//
 		}
 	}
 
