@@ -12,6 +12,8 @@
 // Access to SolarEdge data is determined by the user's API Key & installation. If your situation gives you access
 // to the Accounts List, Meters or Sensors API, feel free to get in touch to get these implemented in this library.
 //
+// Deprecated: v1 of this package is now replaced by github.com/clambin/solaredge/v2
+//
 // [API documentation]: https://knowledge-center.solaredge.com/sites/kc/files/se_monitoring_api.pdf
 package solaredge
 
@@ -28,6 +30,8 @@ import (
 )
 
 // Client to interact with the SolarEdge API
+//
+// Deprecated: v1 of this package is now replaced by github.com/clambin/solaredge/v2
 type Client struct {
 	// Token contains the SolarEdge authentication token
 	Token string
