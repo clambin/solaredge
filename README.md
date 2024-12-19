@@ -6,7 +6,18 @@
 ![GitHub](https://img.shields.io/github/license/clambin/solaredge?style=plastic)
 [![GoDoc](https://pkg.go.dev/badge/github.com/clambin/solaredge?utm_source=godoc)](http://pkg.go.dev/github.com/clambin/solaredge)
 
-Go API for SolarEdge power inverters.
+Go client for SolarEdge power inverters.
+
+Note: v2 is a re-implementation of the original client. The main aim of the rewrite is to improve testability of clients. 
+It is, however, still an implementation of the SolarEdge v1 API.
+
+## Limitations
+
+The following sections of the API have not yet been implemented:
+
+- Account List API
+- Meters API
+- Sensors API
 
 ## Authors
 

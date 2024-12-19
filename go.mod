@@ -1,10 +1,11 @@
 module github.com/clambin/solaredge
 
-go 1.18
+go 1.22
 
 require (
-	github.com/stretchr/testify v1.9.0
-	golang.org/x/net v0.29.0
+	github.com/clambin/go-common/testutils v0.4.1
+	github.com/stretchr/testify v1.10.0
+	golang.org/x/net v0.33.0
 )
 
 require (
