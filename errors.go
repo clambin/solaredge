@@ -1,123 +1,77 @@
 package solaredge
 
 import (
-	"bytes"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"golang.org/x/net/html"
+	"io"
+	"net/http"
 )
 
-// HTTPError contains the HTTP error received from the SolarEdge API server
-type HTTPError struct {
-	StatusCode int
-	Status     string
-	Body       []byte
+type Error struct {
+	vals map[string]any
 }
 
-var _ error = &HTTPError{}
-
-// Error returns a string representation of an HTTPError
-func (e *HTTPError) Error() string { return e.Status }
-
-// Is return true if e2 is an HTTPError
-func (e *HTTPError) Is(e2 error) bool {
-	var HTTPError *HTTPError
-	ok := errors.As(e2, &HTTPError)
-	return ok
+func (e *Error) Error() string {
+	return fmt.Sprintf("api error: %v", e.vals)
 }
 
-// ParseError wraps the error when failing to process the server response. Contains the original server response
-// that generated the error, as well as the json error that triggered the error.
-type ParseError struct {
-	Err  error
-	Body []byte
-}
-
-var _ error = &ParseError{}
-
-// Error returns a string representation of a ParseError
-func (e *ParseError) Error() string {
-	return "json parse error: " + e.Err.Error()
-}
-
-// Unwrap returns the wrapped error
-func (e *ParseError) Unwrap() error {
-	return e.Err
-}
-
-// Is returns true if e2 is a ParseError
-func (e *ParseError) Is(e2 error) bool {
-	var parseError *ParseError
-	ok := errors.As(e2, &parseError)
-	return ok
-}
-
-// An APIError indicates the SolarEdge API server rejected the request (returning 403 - Forbidden).
-//
-// Apart from providing an invalid API key, this happens when the request arguments are not permitted,
-// e.g. calling GetSiteEnergy() with a timeUnit of "DAY" and a time range of more than a year.
-//
-// WARNING: the SolarEdge API returns the error as an HTML document. APIError does its best to parse the document, but this may break at some point.
-type APIError struct {
-	Message string
-}
-
-var _ error = &APIError{}
-
-// Error returns a string representation of an APIError
-func (e *APIError) Error() string {
-	return "api error: " + e.Message
-}
-
-// Is returns true if e2 is a ParseError
-func (e *APIError) Is(e2 error) bool {
-	var APIError *APIError
-	return errors.As(e2, &APIError)
-}
-
-func makeAPIError(body []byte) *APIError {
-	if err := makeAPIErrorFromJSON(body); err != nil {
-		return err
-	}
-	return makeAPIErrorFromHTML(body)
-}
-
-func makeAPIErrorFromJSON(body []byte) *APIError {
-	var response struct {
-		String string `json:"String"`
-	}
-	if err := json.Unmarshal(body, &response); err == nil {
-		return &APIError{Message: response.String}
-	}
-	return nil
-}
-
-func makeAPIErrorFromHTML(body []byte) *APIError {
-	var atMessage bool
-	var message string
-
-	token := html.NewTokenizer(bytes.NewBuffer(body))
-loop:
-	for {
-		switch token.Next() {
-		case html.ErrorToken:
-			break loop
-		case html.TextToken:
-			currentToken := token.Token()
-			if atMessage {
-				message = currentToken.String()
-				break loop
-			}
-			if currentToken.String() == "Message" {
-				atMessage = true
-			}
-		default:
-			//
+func newResponseError(r *http.Response) error {
+	switch r.Header.Get("Content-Type") {
+	case "application/json":
+		// parse json error
+		var e map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&e); err == nil {
+			return &Error{vals: e}
+		}
+	case "text/html":
+		if values := readHTMLError(r.Body); len(values) > 0 {
+			return &Error{vals: values}
 		}
 	}
-
-	if message == "" {
-		message = "could not return error reason"
+	// if response is neither (valid) json nor html, report the HTTP Status Code (& Status, if available).
+	if r.Status != "" {
+		return fmt.Errorf("api error: %s", r.Status)
 	}
-	return &APIError{Message: message}
+	return fmt.Errorf("api error: %d - %s", r.StatusCode, http.StatusText(r.StatusCode))
+}
+
+func readHTMLError(r io.Reader) map[string]any {
+	values := make(map[string]any)
+	tokenizer := html.NewTokenizer(r)
+
+	var currentKey string
+
+	for {
+		// Stop parsing if both keys are found
+		if len(values) == 2 {
+			return values
+		}
+
+		switch tokenizer.Next() {
+		case html.ErrorToken:
+			// Return EOF as nil error for clean termination
+			if tokenizer.Err() == io.EOF {
+				return values
+			}
+			return nil
+
+		case html.TextToken:
+			text := /*html.UnescapeString(*/ string(tokenizer.Text()) //)
+
+			// Check if we're currently expecting a value for a key
+			if currentKey != "" {
+				values[currentKey] = text
+				currentKey = "" // Reset the key after storing the value
+			} else if text == "Message" {
+				currentKey = "message"
+			} else if text == "Description" {
+				currentKey = "description"
+			}
+
+		default:
+			// Skip non-text tokens
+			continue
+		}
+	}
 }

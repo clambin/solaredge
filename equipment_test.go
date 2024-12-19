@@ -1,97 +1,32 @@
-package solaredge_test
+package solaredge
 
 import (
 	"context"
-	"github.com/clambin/solaredge"
-	"github.com/clambin/solaredge/testutil"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
-	"os"
 	"testing"
 	"time"
 )
 
-func TestClient_Equipment_E2E(t *testing.T) {
-	apikey := os.Getenv("SOLAREDGE_APIKEY")
-	if apikey == "" {
-		t.Skip("SOLAREDGE_APIKEY not set. Skipping")
-	}
-
-	c := solaredge.Client{Token: apikey}
-	ctx := context.Background()
-
-	sites, err := c.GetSites(ctx)
-	require.NoError(t, err)
-
-	for _, site := range sites {
-
-		inverters, err := site.GetInverters(ctx)
-		require.NoError(t, err)
-
-		end := time.Now()
-		start := end.Add(-24 * time.Hour)
-
-		for _, inverter := range inverters {
-			telemetry, err := inverter.GetTelemetry(ctx, start, end)
-			require.NoError(t, err)
-			assert.NotEmpty(t, telemetry)
-
-			_, err = site.GetChangeLog(ctx, inverter.SerialNumber)
-			require.NoError(t, err)
-		}
-
-		inventory, err := site.GetInventory(ctx)
-		require.NoError(t, err)
-
-		for _, inverter := range inventory.Inverters {
-			telemetry, err := inverter.GetTelemetry(ctx, start, end)
-			require.NoError(t, err)
-			assert.NotEmpty(t, telemetry)
-			_, err = site.GetChangeLog(ctx, inverter.SN)
-			require.NoError(t, err)
-		}
-	}
+func TestClient_GetComponents(t *testing.T) {
+	c := Client{baseURL: testServer.URL, HTTPClient: http.DefaultClient}
+	resp, err := c.GetComponents(context.Background(), 1)
+	expect(t, resp, "/equipment/1/list", err)
 }
 
-func TestSite_GetInverters(t *testing.T) {
-	c := solaredge.Client{Token: "1234"}
-	c.HTTPClient = &http.Client{Transport: &testutil.Server{Token: "1234"}}
-
-	ctx := context.Background()
-	sites, err := c.GetSites(ctx)
-	require.NoError(t, err)
-	require.Len(t, sites, 1)
-
-	inverters, err := sites[0].GetInverters(ctx)
-	require.NoError(t, err)
-	assert.NotZero(t, inverters)
+func TestClient_GetInventory(t *testing.T) {
+	c := Client{baseURL: testServer.URL, HTTPClient: http.DefaultClient}
+	resp, err := c.GetInventory(context.Background(), 1)
+	expect(t, resp, "/site/1/inventory", err)
 }
 
-func TestSite_GetInventory(t *testing.T) {
-	c := solaredge.Client{Token: "1234"}
-	c.HTTPClient = &http.Client{Transport: &testutil.Server{Token: "1234"}}
-
-	ctx := context.Background()
-	sites, err := c.GetSites(ctx)
-	require.NoError(t, err)
-	require.Len(t, sites, 1)
-
-	inventory, err := sites[0].GetInventory(ctx)
-	require.NoError(t, err)
-	assert.NotZero(t, inventory)
+func TestClient_GetInverterTechnicalData(t *testing.T) {
+	c := Client{baseURL: testServer.URL, HTTPClient: http.DefaultClient}
+	resp, err := c.GetInverterTechnicalData(context.Background(), 1, "SN1", time.Time{}, time.Time{})
+	expect(t, resp, "/equipment/1/SN1/data", err)
 }
 
-func TestSite_GetChangeLog(t *testing.T) {
-	c := solaredge.Client{Token: "1234"}
-	c.HTTPClient = &http.Client{Transport: &testutil.Server{Token: "1234"}}
-
-	ctx := context.Background()
-	sites, err := c.GetSites(ctx)
-	require.NoError(t, err)
-	require.Len(t, sites, 1)
-
-	changelog, err := sites[0].GetChangeLog(ctx, "SN1234")
-	require.NoError(t, err)
-	assert.NotZero(t, changelog)
+func TestClient_GetEquipmentChangeLog(t *testing.T) {
+	c := Client{baseURL: testServer.URL, HTTPClient: http.DefaultClient}
+	resp, err := c.GetEquipmentChangeLog(context.Background(), 1, "SN1")
+	expect(t, resp, "/equipment/1/SN1/changeLog", err)
 }
