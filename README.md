@@ -4,7 +4,7 @@
 ![Build](https://github.com/clambin/solaredge/workflows/Test/badge.svg)
 ![Go Report Card](https://goreportcard.com/badge/github.com/clambin/solaredge)
 ![GitHub](https://img.shields.io/github/license/clambin/solaredge?style=plastic)
-[![GoDoc](https://pkg.go.dev/badge/github.com/clambin/solaredge?utm_source=godoc)](http://pkg.go.dev/github.com/clambin/solaredge)
+[![GoDoc](https://pkg.go.dev/badge/github.com/clambin/solaredge?utm_source=godoc)](http://pkg.go.dev/github.com/clambin/solaredge/v2)
 
 ## ⚠️ Breaking Changes in v2.0.0
 v2 is a re-implementation of the original client. The main aim of the rewrite is to improve testability of clients.
