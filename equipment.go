@@ -16,8 +16,8 @@ func (c *Client) GetComponents(ctx context.Context, id int) (GetComponentsRespon
 
 type GetComponentsResponse struct {
 	Reporters struct {
-		Count int        `json:"count"`
 		List  []Inverter `json:"list"`
+		Count int        `json:"count"`
 	} `json:"reporters"`
 }
 
@@ -54,19 +54,19 @@ type BatteryEquipment struct {
 	Model               string  `json:"model"`
 	FirmwareVersion     string  `json:"firmwareVersion"`
 	ConnectedInverterSn string  `json:"connectedInverterSn"`
-	NameplateCapacity   float64 `json:"nameplateCapacity"`
 	SN                  string  `json:"SN"`
+	NameplateCapacity   float64 `json:"nameplateCapacity"`
 }
 
 // InverterEquipment contains an inverter's name, model, manufacturer, serial number, etc. as returned by GetEquipment.
 type InverterEquipment struct {
 	SN                  string `json:"SN"`
 	CommunicationMethod string `json:"communicationMethod"`
-	ConnectedOptimizers int    `json:"connectedOptimizers"`
 	CPUVersion          string `json:"cpuVersion"`
 	Manufacturer        string `json:"manufacturer"`
 	Model               string `json:"model"`
 	Name                string `json:"name"`
+	ConnectedOptimizers int    `json:"connectedOptimizers"`
 }
 
 // GatewayEquipment contains a gateway's name, model, manufacturer, serial number, etc.
@@ -111,18 +111,18 @@ func (c *Client) GetInverterTechnicalData(ctx context.Context, id int, serialNr 
 
 type GetInverterTechnicalDataResponse struct {
 	Data struct {
-		Count       int                 `json:"count"`
 		Telemetries []InverterTelemetry `json:"telemetries"`
+		Count       int                 `json:"count"`
 	} `json:"data"`
 }
 
 // InverterTelemetry contains technical data for an inverter.
 type InverterTelemetry struct {
-	L1Data                InverterTelemetryL1Data `json:"L1Data"`
 	Time                  Time                    `json:"date"`
+	InverterMode          string                  `json:"inverterMode"`
+	L1Data                InverterTelemetryL1Data `json:"L1Data"`
 	DcVoltage             float64                 `json:"dcVoltage"`
 	GroundFaultResistance float64                 `json:"groundFaultResistance,omitempty"`
-	InverterMode          string                  `json:"inverterMode"`
 	OperationMode         int                     `json:"operationMode"`
 	PowerLimit            float64                 `json:"powerLimit"`
 	Temperature           float64                 `json:"temperature"`
@@ -147,8 +147,8 @@ func (c *Client) GetEquipmentChangeLog(ctx context.Context, id int, serialNr str
 
 type GetEquipmentChangeLogResponse struct {
 	ChangeLog struct {
-		Count int                  `json:"count"`
 		List  []EquipmentChangeLog `json:"list"`
+		Count int                  `json:"count"`
 	} `json:"ChangeLog"`
 }
 type EquipmentChangeLog struct {

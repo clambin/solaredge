@@ -24,8 +24,8 @@ func (c *Client) GetSites(ctx context.Context) (GetSitesResponse, error) {
 
 type GetSitesResponse struct {
 	Sites struct {
-		Count int   `json:"count"`
 		Site  Sites `json:"site"`
+		Count int   `json:"count"`
 	} `json:"sites"`
 }
 
@@ -61,16 +61,9 @@ type GetSiteDetailsResponse struct {
 }
 
 type SiteDetails struct {
-	Id               int     `json:"id"`
-	Name             string  `json:"name"`
-	AccountId        int     `json:"accountId"`
-	Status           string  `json:"status"`
-	PeakPower        float64 `json:"peakPower"`
-	LastUpdateTime   Date    `json:"lastUpdateTime"`
-	InstallationDate Date    `json:"installationDate"`
-	PtoDate          *Date   `json:"ptoDate"`
-	Notes            string  `json:"notes"`
-	Type             string  `json:"type"`
+	LastUpdateTime   Date  `json:"lastUpdateTime"`
+	InstallationDate Date  `json:"installationDate"`
+	PtoDate          *Date `json:"ptoDate"`
 	Location         struct {
 		Country     string `json:"country"`
 		City        string `json:"city"`
@@ -80,17 +73,24 @@ type SiteDetails struct {
 		TimeZone    string `json:"timeZone"`
 		CountryCode string `json:"countryCode"`
 	} `json:"location"`
-	PrimaryModule struct {
-		ManufacturerName string  `json:"manufacturerName"`
-		ModelName        string  `json:"modelName"`
-		MaximumPower     float64 `json:"maximumPower"`
-	} `json:"primaryModule"`
 	Uris struct {
 		SITEIMAGE  string `json:"SITE_IMAGE"`
 		DATAPERIOD string `json:"DATA_PERIOD"`
 		DETAILS    string `json:"DETAILS"`
 		OVERVIEW   string `json:"OVERVIEW"`
 	} `json:"uris"`
+	Name          string `json:"name"`
+	Status        string `json:"status"`
+	Notes         string `json:"notes"`
+	Type          string `json:"type"`
+	PrimaryModule struct {
+		ManufacturerName string  `json:"manufacturerName"`
+		ModelName        string  `json:"modelName"`
+		MaximumPower     float64 `json:"maximumPower"`
+	} `json:"primaryModule"`
+	Id             int     `json:"id"`
+	AccountId      int     `json:"accountId"`
+	PeakPower      float64 `json:"peakPower"`
 	PublicSettings struct {
 		IsPublic bool `json:"isPublic"`
 	} `json:"publicSettings"`
@@ -159,17 +159,17 @@ type GetEnergyForTimeframeResponse struct {
 }
 
 type SiteEnergyForTimeframe struct {
-	Energy              float64        `json:"energy"`
-	Unit                string         `json:"unit"`
-	MeasuredBy          string         `json:"measuredBy"`
 	StartLifetimeEnergy LifetimeEnergy `json:"startLifetimeEnergy"`
 	EndLifetimeEnergy   LifetimeEnergy `json:"endLifetimeEnergy"`
+	Unit                string         `json:"unit"`
+	MeasuredBy          string         `json:"measuredBy"`
+	Energy              float64        `json:"energy"`
 }
 
 type LifetimeEnergy struct {
 	Date   string  `json:"date"`
-	Energy float64 `json:"energy"`
 	Unit   string  `json:"unit"`
+	Energy float64 `json:"energy"`
 }
 
 const timeFormat = "2006-01-02 15:04:05"
@@ -241,9 +241,9 @@ type GetPowerDetailsResponse struct {
 }
 
 type PowerDetails struct {
-	Meters   []MeterReadings `json:"meters"`
 	TimeUnit TimeUnit        `json:"timeUnit"`
 	Unit     string          `json:"unit"`
+	Meters   []MeterReadings `json:"meters"`
 }
 
 // MeterReadings contains power measurements for a type of meter.
@@ -277,9 +277,9 @@ type GetEnergyDetailsResponse struct {
 
 // EnergyDetails contains site energy measurements from meters such as consumption, export (feed-in), import (purchase), etc.
 type EnergyDetails struct {
-	Meters   []MeterReadings `json:"meters"`
 	TimeUnit TimeUnit        `json:"timeUnit"`
 	Unit     string          `json:"unit"`
+	Meters   []MeterReadings `json:"meters"`
 }
 
 // GetPowerFlow returns the current power flow between all elements of the site including PV array, storage (battery), loads (consumption) and grid.
@@ -333,17 +333,17 @@ type GetStorageDataResponse struct {
 }
 
 type StorageData struct {
-	BatteryCount int       `json:"batteryCount"`
 	Batteries    []Battery `json:"batteries"`
+	BatteryCount int       `json:"batteryCount"`
 }
 
 // Battery contains detailed storage information from batteries: the state of energy, power and lifetime energy.
 type Battery struct {
-	Nameplate      int                `json:"nameplate"`
 	SerialNumber   string             `json:"serialNumber"`
 	ModelNumber    string             `json:"modelNumber"`
-	TelemetryCount int                `json:"telemetryCount"`
 	Telemetries    []BatteryTelemetry `json:"telemetries"`
+	Nameplate      int                `json:"nameplate"`
+	TelemetryCount int                `json:"telemetryCount"`
 }
 
 type BatteryTelemetry struct {
@@ -368,10 +368,10 @@ type GetEnvBenefitsResponse struct {
 
 type EnvBenefits struct {
 	GasEmissionSaved struct {
+		Units string  `json:"units"`
 		Co2   float64 `json:"co2"`
 		Nox   float64 `json:"nox"`
 		So2   float64 `json:"so2"`
-		Units string  `json:"units"`
 	} `json:"gasEmissionSaved"`
 	LightBulbs   float64 `json:"lightBulbs"`
 	TreesPlanted float64 `json:"treesPlanted"`

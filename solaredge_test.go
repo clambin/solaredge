@@ -40,8 +40,8 @@ func NewTestServer() *httptest.Server {
 var responses = map[string]any{
 	"/sites/list": GetSitesResponse{
 		Sites: struct {
-			Count int   `json:"count"`
 			Site  Sites `json:"site"`
+			Count int   `json:"count"`
 		}{
 			Count: 1,
 			Site: Sites{
@@ -103,8 +103,8 @@ var responses = map[string]any{
 	},
 	"/site/1/storageData": GetStorageDataResponse{
 		StorageData: struct {
-			BatteryCount int       `json:"batteryCount"`
 			Batteries    []Battery `json:"batteries"`
+			BatteryCount int       `json:"batteryCount"`
 		}{
 			BatteryCount: 1,
 			Batteries: []Battery{{
@@ -120,8 +120,8 @@ var responses = map[string]any{
 	},
 	"/equipment/1/list": GetComponentsResponse{
 		Reporters: struct {
-			Count int        `json:"count"`
 			List  []Inverter `json:"list"`
+			Count int        `json:"count"`
 		}{
 			Count: 1,
 			List:  []Inverter{{SerialNumber: "SN1"}},
@@ -134,8 +134,8 @@ var responses = map[string]any{
 	},
 	"/equipment/1/SN1/data": GetInverterTechnicalDataResponse{
 		Data: struct {
-			Count       int                 `json:"count"`
 			Telemetries []InverterTelemetry `json:"telemetries"`
+			Count       int                 `json:"count"`
 		}{
 			Count: 1,
 			Telemetries: []InverterTelemetry{
@@ -149,8 +149,8 @@ var responses = map[string]any{
 	},
 	"/equipment/1/SN1/changeLog": GetEquipmentChangeLogResponse{
 		ChangeLog: struct {
-			Count int                  `json:"count"`
 			List  []EquipmentChangeLog `json:"list"`
+			Count int                  `json:"count"`
 		}{
 			Count: 1,
 			List:  []EquipmentChangeLog{{SerialNumber: "SN1"}},
