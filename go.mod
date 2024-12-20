@@ -1,3 +1,4 @@
+// Deprecated: This module is no longer maintained. Please use v2.
 module github.com/clambin/solaredge
 
 go 1.18

@@ -6,9 +6,11 @@
 ![GitHub](https://img.shields.io/github/license/clambin/solaredge?style=plastic)
 [![GoDoc](https://pkg.go.dev/badge/github.com/clambin/solaredge?utm_source=godoc)](http://pkg.go.dev/github.com/clambin/solaredge)
 
-## ⚠️ DEPRECATED: github.com/clambin/solaredge/v2 is now available 
-
 Go API for SolarEdge power inverters.
+
+## ⚠️ Deprecated
+This module is no longer maintained. Please use v2. 
+
 
 ## Authors
 
