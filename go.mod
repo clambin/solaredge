@@ -6,5 +6,5 @@ toolchain go1.23.4
 
 require (
 	github.com/clambin/go-common/testutils v0.5.0
-	golang.org/x/net v0.34.0
+	golang.org/x/net v0.35.0
 )
