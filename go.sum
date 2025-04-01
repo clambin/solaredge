@@ -1,6 +1,4 @@
-github.com/clambin/go-common/testutils v0.5.0 h1:kh/0kuBiFL2oeZJ3EgkRyQphqXQmQYqsS3z07a2R2AM=
-github.com/clambin/go-common/testutils v0.5.0/go.mod h1:bV0j8D4zhNkleCeluFKLBeLQ0L/dqkxbaR/joLn8kzg=
-golang.org/x/net v0.36.0 h1:vWF2fRbw4qslQsQzgFqZff+BItCvGFQqKzKIzx1rmoA=
-golang.org/x/net v0.36.0/go.mod h1:bFmbeoIPfrw4sMHNhb4J9f6+tPziuGjq7Jk/38fxi1I=
+github.com/clambin/go-common/testutils v0.6.0 h1:12XnB4C4qgxl/U0TF3/GpyrFLqDOxU3xXfF8pp94Yy8=
+github.com/clambin/go-common/testutils v0.6.0/go.mod h1:LEksddXdgSiq3C3yR5FhQNgNX/exEsa1vXV5mTAG9H4=
 golang.org/x/net v0.37.0 h1:1zLorHbz+LYj7MQlSf1+2tPIIgibq2eL5xkrGk6f+2c=
 golang.org/x/net v0.37.0/go.mod h1:ivrbrMbzFq5J41QOQh0siUuly180yBYtLp+CKbEaFx8=
