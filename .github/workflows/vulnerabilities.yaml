@@ -7,4 +7,5 @@ permissions:
   contents: read
 jobs:
   vulnerabilities:
-    uses: clambin/workflows/.github/workflows/vulnerabilities.yaml@go1.23
+    uses: clambin/workflows/.github/workflows/vulnerabilities.yaml@main
+
