@@ -71,5 +71,5 @@ func call[T any](ctx context.Context, c *Client, path string, args url.Values) (
 }
 
 func makePath(path string, siteId int) string {
-	return strings.Replace(path, "{siteId}", strconv.Itoa(siteId), -1)
+	return strings.ReplaceAll(path, "{siteId}", strconv.Itoa(siteId))
 }
