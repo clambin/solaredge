@@ -1,10 +1,10 @@
 module github.com/clambin/solaredge/v2
 
-go 1.23.0
+go 1.24
 
-toolchain go1.24.1
+toolchain go1.24.2
 
 require (
-	github.com/clambin/go-common/testutils v0.5.0
-	golang.org/x/net v0.37.0
+	codeberg.org/clambin/go-common/testutils v0.6.0
+	golang.org/x/net v0.39.0
 )

@@ -1,6 +1,6 @@
-github.com/clambin/go-common/testutils v0.5.0 h1:kh/0kuBiFL2oeZJ3EgkRyQphqXQmQYqsS3z07a2R2AM=
-github.com/clambin/go-common/testutils v0.5.0/go.mod h1:bV0j8D4zhNkleCeluFKLBeLQ0L/dqkxbaR/joLn8kzg=
-golang.org/x/net v0.36.0 h1:vWF2fRbw4qslQsQzgFqZff+BItCvGFQqKzKIzx1rmoA=
-golang.org/x/net v0.36.0/go.mod h1:bFmbeoIPfrw4sMHNhb4J9f6+tPziuGjq7Jk/38fxi1I=
-golang.org/x/net v0.37.0 h1:1zLorHbz+LYj7MQlSf1+2tPIIgibq2eL5xkrGk6f+2c=
-golang.org/x/net v0.37.0/go.mod h1:ivrbrMbzFq5J41QOQh0siUuly180yBYtLp+CKbEaFx8=
+codeberg.org/clambin/go-common/testutils v0.6.0 h1:mzxhyKBzb/zV0R5ZFpfVHKXtlmGxmxuhE7PnhPNeMvw=
+codeberg.org/clambin/go-common/testutils v0.6.0/go.mod h1:9tB1/HAyA9ypRrY/nCB1uCs/xXbArm/XOtLbUhD0W6g=
+golang.org/x/net v0.38.0 h1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=
+golang.org/x/net v0.38.0/go.mod h1:ivrbrMbzFq5J41QOQh0siUuly180yBYtLp+CKbEaFx8=
+golang.org/x/net v0.39.0 h1:ZCu7HMWDxpXpaiKdhzIfaltL9Lp31x/3fCP11bc6/fY=
+golang.org/x/net v0.39.0/go.mod h1:X7NRbYVEA+ewNkCNyJ513WmMdQ3BineSwVtN2zD/d+E=

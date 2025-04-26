@@ -1,7 +1,7 @@
 package solaredge
 
 import (
-	"github.com/clambin/go-common/testutils"
+	"codeberg.org/clambin/go-common/testutils"
 	"net/http/httptest"
 	"os"
 	"reflect"
