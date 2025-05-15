@@ -2,6 +2,7 @@ package solaredge
 
 import (
 	"codeberg.org/clambin/go-common/testutils"
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"reflect"
@@ -23,21 +24,23 @@ func expect(t *testing.T, response any, path string, err error) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(responses[path], response) {
-		t.Errorf("expected response %v, got %v", responses[path], response)
+	if !reflect.DeepEqual(testResponses[path], response) {
+		t.Errorf("expected response %v, got %v", testResponses[path], response)
 	}
 }
 
 func NewTestServer() *httptest.Server {
-	paths := make(map[string]testutils.Path)
-	for path, response := range responses {
-		paths[path] = testutils.Path{Body: response}
+	responses := make(testutils.Responses)
+	for path, response := range testResponses {
+		responses[path] = testutils.PathResponse{
+			http.MethodGet: {Body: response},
+		}
 	}
-	s := testutils.TestServer{Paths: paths}
+	s := testutils.TestServer{Responses: responses}
 	return httptest.NewServer(&s)
 }
 
-var responses = map[string]any{
+var testResponses = map[string]any{
 	"/sites/list": GetSitesResponse{
 		Sites: struct {
 			Site  Sites `json:"site"`
