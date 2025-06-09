@@ -1,4 +1,4 @@
-codeberg.org/clambin/go-common/testutils v0.7.0 h1:zF7CNrm6anw+Imc4cAEa0mhQuZT/hcnjcoKLjNpQr5M=
-codeberg.org/clambin/go-common/testutils v0.7.0/go.mod h1:9tB1/HAyA9ypRrY/nCB1uCs/xXbArm/XOtLbUhD0W6g=
+codeberg.org/clambin/go-common/testutils v0.7.2 h1:6dwCCfhCRbUXPxwBtVMg3/Pi7wV2mS9ZN2ExUCtI11A=
+codeberg.org/clambin/go-common/testutils v0.7.2/go.mod h1:9tB1/HAyA9ypRrY/nCB1uCs/xXbArm/XOtLbUhD0W6g=
 golang.org/x/net v0.40.0 h1:79Xs7wF06Gbdcg4kdCCIQArK11Z1hr5POQ6+fIYHNuY=
 golang.org/x/net v0.40.0/go.mod h1:y0hY0exeL2Pku80/zKK7tpntoX23cqL3Oa6njdgRtds=
