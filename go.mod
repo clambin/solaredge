@@ -1,8 +1,8 @@
 module github.com/clambin/solaredge/v2
 
-go 1.24
+go 1.24.0
 
 require (
 	codeberg.org/clambin/go-common/testutils v0.7.0
-	golang.org/x/net v0.40.0
+	golang.org/x/net v0.47.0
 )
