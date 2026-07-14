@@ -3,9 +3,10 @@ package solaredge_test
 import (
 	"context"
 	"fmt"
-	"github.com/clambin/solaredge/v2"
 	"os"
 	"time"
+
+	"github.com/clambin/solaredge/v2"
 )
 
 func ExampleClient_GetSites() {

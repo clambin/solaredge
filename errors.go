@@ -3,9 +3,10 @@ package solaredge
 import (
 	"encoding/json"
 	"fmt"
-	"golang.org/x/net/html"
 	"io"
 	"net/http"
+
+	"golang.org/x/net/html"
 )
 
 type Error struct {

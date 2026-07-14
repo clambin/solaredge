@@ -2,10 +2,11 @@ package solaredge_test
 
 import (
 	"context"
-	"github.com/clambin/solaredge/v2"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/clambin/solaredge/v2"
 )
 
 func TestClient_E2E(t *testing.T) {
