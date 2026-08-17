@@ -4,5 +4,5 @@ go 1.25.0
 
 require (
 	codeberg.org/clambin/go-common/testutils v0.7.2
-	golang.org/x/net v0.57.0
+	golang.org/x/net v0.58.0
 )
