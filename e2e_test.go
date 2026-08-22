@@ -31,7 +31,7 @@ func TestClient_E2E(t *testing.T) {
 		t.Fatalf("failed to get site details: %v", err)
 	}
 	if details.Details.Id != id {
-		t.Fatalf("expected id %q, got %q", id, details.Details.Id)
+		t.Fatalf("expected id %v, got %v", id, details.Details.Id)
 	}
 
 	overview, err := c.GetPowerOverview(ctx, id)
